@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Weighle — 세상 모든 것의 무게 맞추기 배틀</title>
+<meta name="description" content="동물·탈것·우주선·보석… 세상 모든 것의 무게를 맞혀라. 1대1 실시간 배틀, Weighle.">
+<meta property="og:title" content="Weighle ⚖️ 세상 모든 것의 무게 맞추기 배틀">
+<meta property="og:description" content="코끼리부터 우주정거장까지, 무게를 맞혀라. 매일 새로운 데일리 챌린지와 1대1 실시간 배틀!">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14110E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://upload.wikimedia.org" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky0:#14110E; --sky1:#221C16; --ink:#14110E;
+  --snow:#F6F1E7; --ice:#E8D5AE; --dim:#A99D8A;
+  --glow:#E9A23B; --glow2:#F7C766;
+  --ok:#7BE0AD; --bad:#FF5A62;
+  --card:rgba(255,240,215,.055); --line:rgba(232,213,174,.17);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Outfit',-apple-system,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+  background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 62%,#3B2F22 100%);
+  color:var(--snow); min-height:100dvh; overflow-x:hidden;
+}
+#dust{position:fixed;inset:0;pointer-events:none;z-index:0}
+#scale{position:fixed;left:0;right:0;bottom:0;pointer-events:none;z-index:0;opacity:.95}
+#app{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:20px 18px 150px;min-height:100dvh}
+section{display:none;animation:fade .28s ease}
+section.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.logo{font-weight:900;font-size:44px;letter-spacing:.04em;text-align:center;margin:26px 0 2px;color:var(--snow)}
+.logo .pk{color:var(--glow)}
+.tag{color:var(--dim);text-align:center;font-size:14px;margin-bottom:26px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.back{background:rgba(232,213,174,.14);border:1.5px solid rgba(232,213,174,.5);color:#fff;border-radius:12px;padding:9px 16px;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.back:active{transform:scale(.95)}
+.h1{font-size:20px;font-weight:700}
+
+.field{margin:14px 0}
+.lbl{display:block;font-size:13px;color:var(--dim);margin-bottom:6px}
+input[type=text],input[type=tel]{
+  width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;
+  color:var(--snow);font-size:18px;padding:14px 16px;outline:none;font-family:inherit;font-weight:700;
+}
+input:focus{border-color:var(--glow)}
+.btn{
+  display:block;width:100%;border:none;border-radius:16px;padding:16px;margin:10px 0;
+  font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);
+  background:linear-gradient(135deg,var(--glow2),var(--glow));transition:transform .08s;
+}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--card);color:var(--snow);border:1px solid var(--line)}
+.btn.small{width:auto;display:inline-block;padding:10px 18px;font-size:14px;margin:4px 4px 4px 0}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px}.row .btn{flex:1}
+.note{font-size:12.5px;color:var(--dim);line-height:1.55;margin-top:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
+
+/* 대전 화면 */
+.hpwrap{display:flex;gap:10px;margin-bottom:6px}
+.hpside{flex:1}
+.hpname{font-size:12px;color:var(--dim);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hpname.me{color:var(--ice)}
+.hprow{display:flex;align-items:center;gap:6px;margin-bottom:4px;min-width:0}
+.hprow.r{justify-content:flex-end}
+.hprow .hpname{margin-bottom:0;min-width:0}
+.mchip{flex:none;font-size:11px;font-weight:900;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,.12);color:var(--ice);transition:transform .25s}
+.mchip.hot{background:var(--glow2);color:var(--ink)}
+.mchip.fire{background:var(--bad);color:#fff}
+.mchip.bump{transform:scale(1.35)}
+.hpbar{height:14px;border-radius:8px;background:rgba(0,0,0,.35);overflow:hidden;border:1px solid var(--line)}
+.hpfill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--ok),#4CC98F);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.hpfill.enemy{background:linear-gradient(90deg,var(--bad),#D63A5E)}
+.hpnum{font-size:11px;color:var(--dim);margin-top:3px;text-align:right}
+.roundbar{display:flex;justify-content:space-between;align-items:center;margin:10px 0 4px}
+.roundtxt{font-size:14px;color:var(--ice);font-weight:700}
+.mult{font-size:12px;font-weight:900;color:var(--ink);background:var(--glow2);border-radius:8px;padding:3px 8px}
+
+.mt{
+  margin:10px 0;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;
+}
+.mtimg{width:100%;aspect-ratio:16/9;max-height:54vh;display:block;background:#1C1712;position:relative;overflow:hidden;transition:aspect-ratio .3s ease}
+.mtimg img.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
+.mtimg img.photo.fit{object-fit:contain}
+.mtimg img.photobg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(20px) brightness(.5);transform:scale(1.15);z-index:0}
+.phload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--dim);font-size:13px}
+.spin2{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--glow);animation:sp 1s linear infinite}
+.nickstat{font-size:12.5px;margin-top:6px;min-height:17px;color:var(--dim)}
+.nickstat.ok{color:var(--ok)}.nickstat.bad{color:var(--bad)}
+.nickstat button{background:none;border:none;color:var(--glow2);text-decoration:underline;font:inherit;cursor:pointer;padding:0 0 0 6px}
+.mystats{font-size:13px;color:var(--ice);min-height:18px;margin:2px 0 6px}
+.srclink{display:none;font-size:12px;color:var(--dim);margin-top:6px;text-decoration:underline}
+.codeval{font-weight:900;letter-spacing:3px;color:var(--glow2)}
+.mtcredit{position:absolute;right:6px;bottom:5px;font-size:10px;color:rgba(255,255,255,.85);background:rgba(0,0,0,.45);padding:2px 7px;border-radius:8px;text-decoration:none;z-index:2;pointer-events:none;user-select:none}
+.mtmeta{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 14px 16px;text-align:left}
+.mticon{width:50px;height:50px;flex:none;border-radius:14px;background:rgba(255,240,215,.08);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1}
+.mtname{font-size:25px;font-weight:900;word-break:keep-all;user-select:none;line-height:1.15}
+.mtqual{font-size:13.5px;color:var(--glow2);font-weight:700;margin-top:4px}
+.mtsub{font-size:12.5px;color:var(--dim);margin-top:2px}
+.timer{height:8px;border-radius:6px;background:rgba(0,0,0,.35);overflow:hidden;margin:12px 0;border:1px solid var(--line)}
+.timerfill{height:100%;background:linear-gradient(90deg,var(--ice),var(--glow));width:100%}
+.guessrow{display:flex;gap:8px}
+.guessrow input{flex:1;min-width:0;text-align:center;font-size:24px;font-weight:900;letter-spacing:.02em}
+.useg{display:flex;flex:none;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.useg button{border:none;background:none;color:var(--dim);min-width:44px;padding:0 9px;font-family:inherit;font-weight:900;font-size:15px;cursor:pointer}
+.useg button.on{background:var(--glow2);color:var(--ink)}
+.gbtn{border:none;border-radius:14px;padding:0 20px;font-size:17px;font-weight:900;font-family:inherit;color:var(--ink);background:linear-gradient(135deg,var(--glow2),var(--glow));cursor:pointer}
+.gbtn:disabled{opacity:.4}
+.waitmsg{text-align:center;color:var(--dim);font-size:14px;margin-top:10px;min-height:20px}
+@media (max-width:380px){ .useg button{min-width:38px;padding:0 6px;font-size:14px} .gbtn{padding:0 14px} .guessrow input{font-size:21px} }
+
+/* 정답 공개 */
+.reveal{text-align:center;padding:8px 0 4px}
+.alt{font-size:50px;font-weight:900;color:var(--glow2);letter-spacing:.01em;font-variant-numeric:tabular-nums;word-break:break-all}
+.altlbl{font-size:13px;color:var(--dim)}
+.cmp{display:flex;gap:10px;margin-top:12px}
+.cmpbox{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
+.cmpwho{font-size:12px;color:var(--dim)}
+.cmpval{font-size:19px;font-weight:900;margin-top:2px;font-variant-numeric:tabular-nums;word-break:break-all}
+.cmpdmg{font-size:14px;font-weight:900;margin-top:2px;color:var(--bad);word-break:break-all}
+.cmpdmg.pts{color:var(--ok)}
+.cmppts{font-size:14px;font-weight:900;color:var(--ok);margin-top:3px;word-break:break-all}
+.rematchmsg{text-align:center;color:var(--glow2);font-size:14px;font-weight:700;min-height:20px;margin-top:6px}
+
+/* 결과 */
+.bigres{text-align:center;margin:30px 0 8px;font-size:40px;font-weight:900}
+.bigres.win{color:var(--ok)}.bigres.lose{color:var(--bad)}.bigres.draw{color:var(--ice)}
+.score{text-align:center;font-size:48px;font-weight:900;color:var(--glow2);font-variant-numeric:tabular-nums}
+.emrow{text-align:center;font-size:30px;letter-spacing:4px;margin:8px 0}
+.codebox{text-align:center;font-size:40px;font-weight:900;letter-spacing:10px;color:var(--glow2);background:var(--card);border:1px dashed var(--line);border-radius:16px;padding:18px;margin:14px 0}
+.spin{width:44px;height:44px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--glow);animation:sp 1s linear infinite;margin:26px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.center{text-align:center}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 2px;border-bottom:1px solid var(--line)}
+.setrow:last-child{border-bottom:none}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:none;background:none;color:var(--dim);padding:8px 14px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.seg button.on{background:var(--glow);color:var(--ink)}
+.seg.wide{width:100%}.seg.wide button{flex:1;padding:12px 8px;font-size:15px}
+select{background:var(--card);border:1px solid var(--line);color:var(--snow);border-radius:10px;padding:8px 10px;font-family:inherit;font-size:14px}
+select option{color:#000}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:rgba(20,17,14,.96);border:1px solid var(--line);color:var(--snow);padding:12px 20px;border-radius:14px;font-size:14px;z-index:99;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+.pill{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:12px;color:var(--dim);margin:2px}
+.roommode{text-align:center;color:var(--ice);font-size:13px;margin-top:6px;line-height:1.5}
+
+/* 선택전 카테고리 */
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--snow);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.chip small{font-size:11px;color:var(--dim);font-weight:700}
+.chip.on{background:var(--glow2);color:var(--ink);border-color:var(--glow2)}
+.chip.on small{color:rgba(20,17,14,.65)}
+.catsum{font-size:13px;color:var(--dim);margin-top:10px;min-height:18px}
+</style>
+</head>
+<body>
+<canvas id="dust"></canvas>
+<svg id="scale" viewBox="0 0 480 150" preserveAspectRatio="xMidYMax slice" height="150" width="100%">
+  <!-- 바닥의 무쇠 추들 -->
+  <path d="M18,150 L30,112 L86,112 L98,150 Z" fill="#1F1914"/>
+  <path d="M48,112 C48,96 68,96 68,112" fill="none" stroke="#1F1914" stroke-width="6"/>
+  <path d="M100,150 L108,128 L140,128 L148,150 Z" fill="#191410"/>
+  <path d="M117,128 C117,119 131,119 131,128" fill="none" stroke="#191410" stroke-width="4"/>
+  <path d="M372,150 L384,120 L426,120 L438,150 Z" fill="#1F1914"/>
+  <path d="M398,120 C398,107 412,107 412,120" fill="none" stroke="#1F1914" stroke-width="5"/>
+  <path d="M440,150 L446,136 L466,136 L472,150 Z" fill="#191410"/>
+  <!-- 가운데 천칭 -->
+  <rect x="236" y="62" width="8" height="82" rx="2" fill="#2A221B"/>
+  <path d="M206,150 L218,140 L262,140 L274,150 Z" fill="#2A221B"/>
+  <g transform="rotate(-5 240 62)">
+    <rect x="170" y="58" width="140" height="6" rx="3" fill="#2A221B"/>
+    <path d="M178,64 L162,98 M178,64 L194,98" stroke="#2A221B" stroke-width="2"/>
+    <path d="M302,64 L286,98 M302,64 L318,98" stroke="#2A221B" stroke-width="2"/>
+    <path d="M156,98 Q178,114 200,98 Z" fill="#2A221B"/>
+    <path d="M280,98 Q302,114 324,98 Z" fill="#2A221B"/>
+  </g>
+  <circle cx="240" cy="60" r="7" fill="#3A2E22"/>
+  <rect x="0" y="146" width="480" height="4" fill="#14110E"/>
+</svg>
+<div id="app">
+
+<!-- 홈 -->
+<section id="s-home" class="on">
+  <div class="logo">WEIGH<span class="pk">LE</span></div>
+  <div class="tag" data-i="tag"></div>
+  <div class="field">
+    <label class="lbl" data-i="nick"></label>
+    <input type="text" id="nick" maxlength="12" autocomplete="off">
+    <div class="nickstat" id="nickstat"></div>
+    <div id="recoverrow" style="display:none">
+      <div class="guessrow" style="margin-top:8px">
+        <input type="text" id="recode" maxlength="9" autocomplete="off" style="text-transform:uppercase;letter-spacing:3px;text-align:center;font-size:16px">
+        <button class="gbtn" id="b-recover" style="font-size:14px;padding:0 14px"></button>
+      </div>
+    </div>
+  </div>
+  <div class="center mystats" id="mystats"></div>
+  <button class="btn" id="b-daily"></button>
+  <button class="btn" id="b-battle"></button>
+  <button class="btn ghost" id="b-practice"></button>
+  <button class="btn ghost" id="b-settings"></button>
+  <div class="center" style="margin-top:14px">
+    <span class="pill" id="mtcount"></span>
+    <span class="pill" id="catcount"></span>
+  </div>
+</section>
+
+<!-- 대결 로비 -->
+<section id="s-battle">
+  <div class="top"><button class="back" data-go="home">←</button><div class="h1" data-i="battle"></div></div>
+  <button class="btn" id="b-quick"></button>
+  <button class="btn ghost" id="b-create"></button>
+  <div class="field">
+    <label class="lbl" data-i="join_lbl"></label>
+    <div class="guessrow">
+      <input type="text" id="joincode" maxlength="5" autocomplete="off" style="text-transform:uppercase;letter-spacing:6px;text-align:center">
+      <button class="gbtn" id="b-join" data-i="join"></button>
+    </div>
+  </div>
+  <p class="note" data-i="battle_note"></p>
+</section>
+
+<!-- 친구전 방 설정 (일반전 / 선택전) -->
+<section id="s-room">
+  <div class="top"><button class="back" data-go="battle">←</button><div class="h1" data-i="room_title"></div></div>
+  <div class="seg wide">
+    <button id="m-normal" data-i="mode_normal"></button>
+    <button id="m-select" data-i="mode_select"></button>
+  </div>
+  <p class="note" id="modedesc"></p>
+  <div id="catpick" style="display:none">
+    <div class="cats" id="cats"></div>
+    <div style="margin-top:8px">
+      <button class="btn ghost small" id="b-catall" data-i="all"></button>
+      <button class="btn ghost small" id="b-catnone" data-i="none"></button>
+    </div>
+    <div class="catsum" id="catsum"></div>
+  </div>
+  <button class="btn" id="b-makeroom" data-i="make_room" style="margin-top:16px"></button>
+</section>
+
+<!-- 매칭/대기 -->
+<section id="s-wait">
+  <div class="top"><button class="back" id="b-cancelwait">←</button><div class="h1" id="waittitle"></div></div>
+  <div class="spin"></div>
+  <div class="center" id="waitdesc" style="color:var(--dim);font-size:14px"></div>
+  <div class="codebox" id="roomcodebox" style="display:none"></div>
+  <div class="roommode" id="roommode"></div>
+  <button class="btn ghost" id="b-copycode" style="display:none"></button>
+</section>
+
+<!-- 게임(공용: 대결/데일리/연습) -->
+<section id="s-game">
+  <div id="hparea">
+    <div class="hpwrap">
+      <div class="hpside"><div class="hprow"><div class="hpname me" id="myname"></div><span class="mchip" id="mymult">×1</span></div><div class="hpbar"><div class="hpfill" id="myhp"></div></div><div class="hpnum" id="myhpn"></div></div>
+      <div class="hpside"><div class="hprow r"><span class="mchip" id="foemult">×1</span><div class="hpname" id="foename" style="text-align:right"></div></div><div class="hpbar"><div class="hpfill enemy" id="foehp"></div></div><div class="hpnum" id="foehpn" style="text-align:left"></div></div>
+    </div>
+  </div>
+  <div class="roundbar">
+    <div class="roundtxt" id="roundtxt"></div>
+    <div class="mult" id="multbadge" style="display:none"></div>
+    <div class="roundtxt" id="scoretxt" style="color:var(--glow2)"></div>
+  </div>
+  <div class="mt">
+    <div class="mtimg" id="mtimg"></div>
+    <div class="mtmeta">
+      <div class="mticon" id="mticon"></div>
+      <div>
+        <div class="mtname" id="mtname">—</div>
+        <div class="mtqual" id="mtqual"></div>
+        <div class="mtsub" id="mtsub"></div>
+      </div>
+    </div>
+  </div>
+  <div class="timer"><div class="timerfill" id="timerfill"></div></div>
+  <div id="guessarea">
+    <div class="guessrow">
+      <input type="text" id="guess" inputmode="decimal" autocomplete="off" placeholder="0">
+      <div class="useg" id="useg"></div>
+      <button class="gbtn" id="b-submit">⏎</button>
+    </div>
+    <div class="waitmsg" id="waitmsg"></div>
+  </div>
+  <div id="revealarea" style="display:none">
+    <div class="reveal">
+      <div class="altlbl" data-i="answer"></div>
+      <div class="alt" id="altnum">0</div>
+      <div class="cmp" id="cmparea"></div>
+    </div>
+    <div class="waitmsg" id="nextmsg"></div>
+    <div class="center"><a class="srclink" id="srclink" target="_blank" rel="noopener"></a></div>
+  </div>
+  <button class="btn ghost" id="b-quitgame" style="margin-top:16px"></button>
+</section>
+
+<!-- 대결 결과 -->
+<section id="s-result">
+  <div class="bigres" id="restitle"></div>
+  <div class="center" id="ressub" style="color:var(--dim)"></div>
+  <div class="card">
+    <div class="cmp">
+      <div class="cmpbox"><div class="cmpwho" id="r-myname"></div><div class="cmpval" id="r-myhp"></div></div>
+      <div class="cmpbox"><div class="cmpwho" id="r-foename"></div><div class="cmpval" id="r-foehp"></div></div>
+    </div>
+  </div>
+  <button class="btn" id="b-rematch"></button>
+  <div class="rematchmsg" id="rematchmsg"></div>
+  <button class="btn ghost" id="b-share-battle"></button>
+  <button class="btn ghost" data-go="home" data-i="home"></button>
+</section>
+
+<!-- 데일리 결과 -->
+<section id="s-daily-result">
+  <div class="top"><button class="back" data-go="home">←</button><div class="h1" id="dailytitle"></div></div>
+  <div class="score" id="dailyscore"></div>
+  <div class="center" style="color:var(--dim);font-size:13px" data-i="daily_max"></div>
+  <div class="emrow" id="dailyemoji"></div>
+  <div class="card" id="dailydetail" style="font-size:14px;line-height:2"></div>
+  <button class="btn" id="b-share-daily"></button>
+  <button class="btn ghost" data-go="home" data-i="home"></button>
+  <p class="note center" data-i="daily_next"></p>
+</section>
+
+<!-- 설정 -->
+<section id="s-settings">
+  <div class="top"><button class="back" data-go="home">←</button><div class="h1" data-i="settings"></div></div>
+  <div class="card">
+    <div class="setrow"><span data-i="lang"></span>
+      <select id="langsel">
+        <option value="ko">한국어</option>
+        <option value="en">English</option>
+        <option value="" disabled>中文 (준비 중)</option>
+        <option value="" disabled>日本語 (준비 중)</option>
+        <option value="" disabled>Español (준비 중)</option>
+        <option value="" disabled>Français (준비 중)</option>
+        <option value="" disabled>हिन्दी (준비 중)</option>
+      </select>
+    </div>
+    <div class="setrow"><span data-i="unit"></span>
+      <div class="seg"><button id="u-metric">g · kg · t</button><button id="u-imperial">oz · lb · ton</button></div>
+    </div>
+    <div class="setrow"><span data-i="sound"></span>
+      <div class="seg"><button id="snd-on" data-i="on"></button><button id="snd-off" data-i="off"></button></div>
+    </div>
+  </div>
+  <div class="card" id="codecard">
+    <div class="setrow"><span><span data-i="code_title"></span> <b id="codenick" style="color:var(--ice)"></b></span><span class="codeval" id="codeval">—</span></div>
+    <button class="btn ghost small" id="b-copyrc" data-i="copy_code2"></button>
+    <p class="note" data-i="code_note"></p>
+  </div>
+  <p class="note" data-i="settings_note"></p>
+</section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="weights.js"></script>
+<script type="module">
+/* ================= Firebase ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, update, remove, onValue, off, onDisconnect, runTransaction,
+         increment, query, orderByChild, endAt, limitToFirst }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInAnonymously, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ▼▼▼ Firebase 콘솔 → 프로젝트 설정 → 내 앱(웹)의 firebaseConfig 값으로 바꿔 넣기 ▼▼▼ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAD_2dbBjY3lcGr6hXgAsvq29yUWkGndi8",
+  authDomain: "weighle.firebaseapp.com",
+  databaseURL: "https://weighle-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "weighle",
+  storageBucket: "weighle.firebasestorage.app",
+  messagingSenderId: "750282774089",
+  appId: "1:750282774089:web:b93cc98a3de64fce0ad198"
+};
+/* ▲▲▲ 설정값이 아직 없으면(YOUR_로 시작) 온라인 기능만 꺼진 채로 데일리·연습은 동작 ▲▲▲ */
+const FB_OK = !String(firebaseConfig.apiKey).startsWith("YOUR_");
+let db=null, auth=null;
+let serverOffset = 0;
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+if(FB_OK){
+  const fbApp = initializeApp(firebaseConfig);
+  db = getDatabase(fbApp);
+  onValue(ref(db, ".info/serverTimeOffset"), s => { serverOffset = s.val() || 0; });
+  auth = getAuth(fbApp);
+}
+const now = () => Date.now() + serverOffset;
+
+/* ===== 익명 인증 (회원가입 화면 없음) =====
+   기기마다 보이지 않는 고유 ID를 Firebase가 자동 발급 → 보안 규칙이 "누가 쓴 데이터인지" 확인 가능.
+   uid = 플레이어 ID(같은 기기의 탭 2개로도 대결 가능하도록 탭 번호를 붙임) */
+let AUID = null, uid = null;
+const TAB = sessionStorage.getItem("wl_tab") || (()=>{const v=Math.random().toString(36).slice(2,6);sessionStorage.setItem("wl_tab",v);return v;})();
+const authReady = FB_OK
+  ? new Promise(res=>{ onAuthStateChanged(auth,u=>{ if(u){ AUID=u.uid; uid=AUID+"_"+TAB; res(true); } }); })
+  : new Promise(()=>{});
+if(FB_OK) signInAnonymously(auth).catch(()=>{});
+const online = () => FB_OK ? Promise.race([authReady, sleep(7000).then(()=>false)]) : Promise.resolve(false);
+
+/* ================= i18n ================= */
+const STR = {
+ko:{
+ tag:"세상 모든 것의 무게를 맞혀라", nick:"닉네임 (2~12자)", daily:"📅 데일리 챌린지", battle:"⚔️ 1대1 대결",
+ practice:"🎯 연습 모드", settings:"⚙️ 설정", quick:"⚡ 빠른 매칭", create:"🏠 방 만들기 (친구전)", join:"입장",
+ join_lbl:"코드로 입장", battle_note:"체력 1,000으로 시작. 매 라운드 더 가깝게 맞힌 쪽이 '두 사람 오차의 차이(kg) × 내 배수'만큼 상대 체력을 깎아요. 예: 내 오차 20kg, 상대 오차 70kg → 상대 -50. 둘 다 ×1로 시작하고, 라운드를 이길 때마다 내 배수가 +0.5씩 올라가요. 최대 15라운드. 빠른 매칭은 일반전(전체 카테고리)이고, 친구전은 카테고리를 고르는 선택전도 할 수 있어요.",
+ nick_chars:"닉네임은 글자·숫자·공백·_·- 만 쓸 수 있어요", nick_taken:"이미 사용 중인 닉네임이에요", nick_free:"사용할 수 있는 닉네임", nick_mine:"내 닉네임",
+ recover_q:"내 닉네임인가요?", recover_btn:"복구", recover_ok:"닉네임을 가져왔어요!", recover_bad:"복구 코드가 맞지 않아요", recover_ph:"복구 코드",
+ offline:"서버에 연결할 수 없어요. 인터넷을 확인해 주세요", code_title:"내 복구 코드", copy_code2:"복구 코드 복사",
+ code_note:"다른 기기나 브라우저에서 이 닉네임(과 전적)을 쓰려면 이 코드가 필요해요. 남에게 알려주지 마세요.",
+ w:"승", l:"패", d:"무", daily_best:"데일리 최고", photo_src:"사진 출처 (Wikimedia Commons)", daily_saved:"진행 상황을 저장했어요. 나중에 이어서 할 수 있어요", rematch:"🔄 재대결", rematch_bot:"🔄 다시 하기", rematch_wait:"상대의 수락을 기다리는 중…", rematch_req:"상대가 재대결을 원해요! 버튼을 누르면 바로 시작해요", opp_gone:"상대가 나갔어요", attack:"공격", tie:"무승부 라운드", photo_loading:"사진 불러오는 중…", next_mult:"다음 라운드 배수 —", foe:"상대", join_fail:"상대 연결이 끊겼어요. 다시 찾는 중…",
+ matching:"상대를 찾는 중…", matching_desc:"30초 안에 상대가 없으면 연습봇과 대결해요", room_wait:"친구를 기다리는 중…",
+ room_desc:"아래 코드를 친구에게 알려주세요", copy_code:"코드 복사", copied:"복사했어요!",
+ round:"라운드", answer:"실제 무게", me:"나", bot_prefix:"", submit_done:"제출 완료! 상대를 기다리는 중…",
+ timeout:"시간 초과!", damage:"데미지", pts:"점", win:"승리!", lose:"패배…", draw:"무승부",
+ win_sub:"저울보다 정확한 눈!", lose_sub:"다음엔 더 묵직하게 가자.", draw_sub:"완벽하게 대등한 실력!",
+ opp_left:"상대가 나갔어요. 부전승!", share:"결과 공유하기", home:"홈으로", quit:"나가기",
+ daily_title:"데일리 챌린지", daily_max:"/ 25,000점", daily_next:"내일 자정(UTC)에 새 문제가 나와요!",
+ daily_done:"오늘 챌린지를 이미 완료했어요", lang:"언어", unit:"무게 단위", sound:"효과음", on:"켜기", off:"끄기",
+ settings_note:"언어를 바꾸면 문제 이름도 해당 언어 표기로 나와요. 무게 단위를 바꾸면 답 표시와 입력 단위가 함께 바뀌어요.",
+ nick_short:"닉네임은 2자 이상이어야 해요", nick_bad:"사용할 수 없는 닉네임이에요", no_room:"방을 찾을 수 없어요",
+ room_full:"방이 가득 찼어요", practice_end:"연습 종료", rounds_played:"라운드 진행", avg_pts:"평균 점수",
+ mts:"개의 무게 문제", cats_n:"개 카테고리", err:"오차", guess_ph:"무게", next_in:"곧 다음 라운드…", start_in:"게임 시작!",
+ share_daily:(n,s,e)=>`Weighle 데일리 #${n}\n⚖️ ${s.toLocaleString()} / 25,000점\n${e}\n`,
+ share_battle:(w,me,foe)=>`Weighle ⚔️ 1대1 배틀 ${w}\n${me} vs ${foe}\n`,
+ version_err:"상대와 게임 버전이 달라요. 새로고침 해주세요!",
+ room_title:"친구전 방 만들기", mode_normal:"일반전", mode_select:"선택전",
+ mode_normal_desc:"모든 카테고리에서 한 문제씩 무작위로 나와요.",
+ mode_select_desc:"고른 카테고리 안에서만 문제가 나와요. 여러 개를 고를 수 있어요.",
+ all:"전체 선택", none:"전체 해제", make_room:"방 만들기",
+ need_cat:"카테고리를 하나 이상 골라주세요", need_more:"고른 카테고리의 문제를 합쳐 15개 이상이어야 해요",
+ cat_sum:(n,q)=>`${n}개 카테고리 · 문제 ${q}개`, mode_line_normal:"일반전 · 전체 카테고리", mode_line_select:"선택전 · ",
+ more:n=>` 외 ${n}개`, bad_num:"숫자를 입력해 주세요",
+},
+en:{
+ tag:"Guess the weight of everything. Battle everyone.", nick:"Nickname (2–12 chars)", daily:"📅 Daily Challenge",
+ battle:"⚔️ 1v1 Battle", practice:"🎯 Practice", settings:"⚙️ Settings", quick:"⚡ Quick Match",
+ create:"🏠 Create Room (friends)", join:"Join", join_lbl:"Join with code",
+ battle_note:"Start with 1,000 HP. Each round, the closer guess deals (difference between both errors in kg) × their multiplier. E.g. your error 20 kg, theirs 70 kg → they lose 50. Both start at ×1; every round you win adds +0.5 to your multiplier. Max 15 rounds. Quick Match uses all categories; friend rooms can pick categories.",
+ nick_chars:"Use letters, numbers, spaces, _ or - only", nick_taken:"That nickname is taken", nick_free:"Nickname available", nick_mine:"Your nickname",
+ recover_q:"Is it yours?", recover_btn:"Restore", recover_ok:"Nickname restored!", recover_bad:"Wrong recovery code", recover_ph:"Recovery code",
+ offline:"Can't reach the server. Check your connection", code_title:"My recovery code", copy_code2:"Copy recovery code",
+ code_note:"You need this code to use this nickname (and its record) on another device or browser. Keep it private.",
+ w:"W", l:"L", d:"D", daily_best:"Daily best", photo_src:"Photo source (Wikimedia Commons)", daily_saved:"Progress saved. You can continue later", rematch:"🔄 Rematch", rematch_bot:"🔄 Play again", rematch_wait:"Waiting for opponent…", rematch_req:"Opponent wants a rematch! Tap to start", opp_gone:"Opponent left", attack:"attack", tie:"Tied round", photo_loading:"Loading photo…", next_mult:"Next round multipliers —", foe:"Opponent", join_fail:"Opponent disconnected. Searching again…",
+ matching:"Finding an opponent…", matching_desc:"If no one joins in 30s, you'll face a practice bot",
+ room_wait:"Waiting for your friend…", room_desc:"Share this code with a friend", copy_code:"Copy code", copied:"Copied!",
+ round:"Round", answer:"Actual weight", me:"You", bot_prefix:"", submit_done:"Submitted! Waiting for opponent…",
+ timeout:"Time's up!", damage:"damage", pts:"pts", win:"Victory!", lose:"Defeat…", draw:"Draw",
+ win_sub:"Sharper than a scale!", lose_sub:"Weigh in harder next time.", draw_sub:"Perfectly balanced!",
+ opp_left:"Opponent left. You win!", share:"Share result", home:"Home", quit:"Quit",
+ daily_title:"Daily Challenge", daily_max:"/ 25,000 pts", daily_next:"New puzzle at midnight UTC!",
+ daily_done:"You already finished today's challenge", lang:"Language", unit:"Weight unit", sound:"Sound", on:"On", off:"Off",
+ settings_note:"Changing language also changes item names where a translation exists. Changing units changes both answers and your input units.",
+ nick_short:"Nickname must be at least 2 characters", nick_bad:"That nickname isn't allowed", no_room:"Room not found",
+ room_full:"Room is full", practice_end:"Practice over", rounds_played:"Rounds played", avg_pts:"Avg points",
+ mts:"things to weigh", cats_n:"categories", err:"error", guess_ph:"Weight", next_in:"Next round soon…", start_in:"Game start!",
+ share_daily:(n,s,e)=>`Weighle Daily #${n}\n⚖️ ${s.toLocaleString()} / 25,000 pts\n${e}\n`,
+ share_battle:(w,me,foe)=>`Weighle ⚔️ 1v1 Battle — ${w}\n${me} vs ${foe}\n`,
+ version_err:"Game version mismatch with opponent. Please refresh!",
+ room_title:"Create a friend room", mode_normal:"Standard", mode_select:"Pick categories",
+ mode_normal_desc:"Each round is drawn at random from every category.",
+ mode_select_desc:"Rounds only come from the categories you pick. Pick as many as you like.",
+ all:"Select all", none:"Clear", make_room:"Create room",
+ need_cat:"Pick at least one category", need_more:"Your categories need at least 15 items in total",
+ cat_sum:(n,q)=>`${n} categories · ${q} items`, mode_line_normal:"Standard · all categories", mode_line_select:"Categories · ",
+ more:n=>` +${n} more`, bad_num:"Please enter a number",
+}};
+let L = localStorage.getItem("wl_lang") || "ko";
+const t = k => STR[L][k];
+
+/* ================= 상태/설정 ================= */
+const $ = id => document.getElementById(id);
+const MT = window.WEIGHTS;
+let sound = localStorage.getItem("wl_sound") !== "0";
+const BAD = ["시발","씨발","씨빨","병신","병1신","개새","존나","좆","자지","보지","니미","걸레","창녀","fuck","shit","bitch","asshole","nigger","nigga","cunt","faggot","porn","sex","dick","pussy","whore","rape"];
+const BOTNAMES = ["저울요정","무게측정기9000","근육고양이","헤비급곰돌이","깃털도사","ScaleBot","HeavyMetal","FeatherFox"];
+const LAUNCH_UTC = Date.UTC(2026,9,16);   // 데일리 #1 날짜 (UTC)
+
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function nickname(){ return ($("nick").value||"").trim().replace(/\s+/g," "); }
+const NICK_RE=/^[\p{L}\p{N}_\- ]{2,12}$/u;
+function nickProblem(n){
+  if(n.length<2) return "nick_short";
+  if(!NICK_RE.test(n)) return "nick_chars";
+  const low=n.toLowerCase().replace(/[\s_\-.0-9]/g,"");
+  if(BAD.some(b=>low.includes(b))) return "nick_bad";
+  return null;
+}
+const nickKey = n => encodeURIComponent(n.trim().toLowerCase()).replace(/\./g,"%2E");
+let myNickKey = localStorage.getItem("wl_nickkey") || null;
+let verifiedKey = null;   // 이번 접속에서 서버로 소유 확인을 마친 닉네임
+let myStats = null;
+function genCode(){ const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b=new Uint8Array(8); crypto.getRandomValues(b); return [...b].map(x=>A[x%32]).join(""); }
+const fmtCode = c => c ? c.slice(0,4)+"-"+c.slice(4) : "—";
+function setMine(n,k){ myNickKey=k; verifiedKey=k; localStorage.setItem("wl_nickkey",k); localStorage.setItem("wl_nick",n); localStorage.setItem("wl_nickname_of_"+k,n); }
+/* 닉네임 차지: ok | taken | offline */
+async function claimNick(n){
+  if(!await online()) return "offline";
+  const k=nickKey(n);
+  try{
+    const o=await get(ref(db,`nicknames/${k}/owner`));
+    if(o.exists() && o.val()!==AUID) return "taken";
+    if(!o.exists()){
+      const code=genCode();
+      await set(ref(db,`nicknames/${k}`),{owner:AUID,code,nick:n});   // 동시에 누가 먼저 가져가면 보안 규칙이 거부
+      localStorage.setItem("wl_code_"+k,code);
+    }
+    setMine(n,k); loadStats(); return "ok";
+  }catch(e){ return "taken"; }
+}
+/* 모드 시작 전 닉네임 확인. needNet=true면 온라인 필수(대결) */
+async function ensureNick(needNet){
+  const n=nickname(), p=nickProblem(n);
+  if(p){ toast(t(p)); return false; }
+  if(!AUID && !needNet){ localStorage.setItem("wl_nick",n); return true; }   // 아직 서버 연결 전: 혼자 하는 모드는 바로 시작
+  const r=await claimNick(n);   // 매번 서버에서 소유 여부 확인 (다른 기기가 복구해 간 경우 대비)
+  if(r==="ok") return true;
+  if(r==="taken"){ toast(t("nick_taken")); nickStatus(); return false; }
+  if(needNet){ toast(t("offline")); return false; }
+  localStorage.setItem("wl_nick",n); return true;   // 혼자 하는 모드는 오프라인이어도 가능
+}
+let nickTimer=null;
+function nickStatus(){
+  clearTimeout(nickTimer);
+  const el=$("nickstat"), n=nickname(); $("recoverrow").style.display="none";
+  el.className="nickstat"; el.textContent="";
+  if(!n) return;
+  const p=nickProblem(n); if(p){ el.className="nickstat bad"; el.textContent=t(p); return; }
+  nickTimer=setTimeout(async()=>{
+    if(!await online()) return;
+    const k=nickKey(n);
+    try{
+      const o=await get(ref(db,`nicknames/${k}/owner`)); if(nickname()!==n) return;
+      if(!o.exists()){ el.className="nickstat ok"; el.textContent="✓ "+t("nick_free"); }
+      else if(o.val()===AUID){ el.className="nickstat ok"; el.textContent="✓ "+t("nick_mine"); if(myNickKey!==k){ setMine(n,k); loadStats(); } }
+      else { el.className="nickstat bad"; el.innerHTML="✗ "+esc(t("nick_taken"))+'<button id="b-showrec">'+esc(t("recover_q"))+"</button>";
+             $("b-showrec").onclick=()=>{ $("recoverrow").style.display="block"; $("recode").focus(); }; }
+    }catch(e){}
+  },350);
+}
+async function recoverNick(){
+  const n=nickname(), code=($("recode").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(nickProblem(n)||code.length!==8){ toast(t("recover_bad")); return; }
+  if(!await online()){ toast(t("offline")); return; }
+  const k=nickKey(n);
+  try{
+    await set(ref(db,`nicknames/${k}`),{owner:AUID,code,nick:n});   // 코드가 맞을 때만 보안 규칙이 허용
+    localStorage.setItem("wl_code_"+k,code); setMine(n,k);
+    $("recoverrow").style.display="none"; toast(t("recover_ok")); nickStatus(); loadStats();
+  }catch(e){ toast(t("recover_bad")); }
+}
+/* 복구 코드 보기 (이 기기에 없으면 새로 발급 — 소유자만 가능) */
+async function showMyCode(){
+  const el=$("codeval");
+  if(!myNickKey){ el.textContent="—"; return; }
+  let c=localStorage.getItem("wl_code_"+myNickKey);
+  if(!c && await online()){
+    try{ c=genCode(); await update(ref(db,`nicknames/${myNickKey}`),{owner:AUID,code:c,nick:localStorage.getItem("wl_nick")}); localStorage.setItem("wl_code_"+myNickKey,c); }
+    catch(e){ c=null; }
+  }
+  el.textContent=fmtCode(c);
+  $("codenick").textContent=localStorage.getItem("wl_nickname_of_"+myNickKey)||"";
+}
+/* 닉네임별 기록 */
+async function loadStats(){
+  if(!myNickKey || !await online()) return;
+  try{ const s=await get(ref(db,`stats/${myNickKey}`)); myStats=s.val()||{}; renderStats(); }catch(e){}
+}
+function renderStats(){
+  const s=myStats||{}, el=$("mystats");
+  const parts=[];
+  if(s.games) parts.push(`🏆 ${s.wins||0}${t("w")} ${s.losses||0}${t("l")}`+(s.draws?` ${s.draws}${t("d")}`:""));
+  if(s.best) parts.push(`📅 ${t("daily_best")} ${s.best.toLocaleString()}`);
+  el.textContent=parts.join("  ·  ");
+}
+async function recordBattle(kind){
+  if(!myNickKey || !AUID) return;
+  try{ await update(ref(db,`stats/${myNickKey}`),{games:increment(1),[kind]:increment(1)}); loadStats(); }catch(e){}
+}
+async function recordDaily(dn,res){
+  if(!myNickKey || !AUID) return;
+  try{
+    await set(ref(db,`stats/${myNickKey}/daily/${dn}`),{s:res.s,p:res.p.join(",")});
+    if(!(myStats&&myStats.best>=res.s)) await update(ref(db,`stats/${myNickKey}`),{best:res.s});
+    loadStats();
+  }catch(e){}
+}
+async function serverDaily(dn){
+  if(!myNickKey || !await online()) return null;
+  try{ const s=await get(ref(db,`stats/${myNickKey}/daily/${dn}`)); if(!s.exists()) return null;
+       const v=s.val(); return {s:v.s,p:String(v.p||"").split(",").map(Number)}; }catch(e){ return null; }
+}
+$("nick").value = localStorage.getItem("wl_nick") || "";
+
+/* ===== 카테고리 (국기 자리에 아이콘) ===== */
+const CATS={
+ 1:{ic:"🦁",ko:"포유류",en:"Mammals"}, 2:{ic:"🐕",ko:"견종",en:"Dog breeds"}, 3:{ic:"🦅",ko:"조류",en:"Birds"},
+ 4:{ic:"🐋",ko:"바다 생물",en:"Sea life"}, 5:{ic:"🐊",ko:"파충류·양서류",en:"Reptiles & amphibians"}, 6:{ic:"🐝",ko:"곤충·거미",en:"Insects & spiders"},
+ 7:{ic:"🦖",ko:"공룡·고생물",en:"Prehistoric life"}, 8:{ic:"🍎",ko:"과일·채소",en:"Fruits & vegetables"}, 9:{ic:"🍔",ko:"음식",en:"Food"},
+ 10:{ic:"🚗",ko:"자동차·오토바이",en:"Cars & motorcycles"}, 11:{ic:"✈️",ko:"항공기",en:"Aircraft"}, 12:{ic:"🚢",ko:"선박",en:"Ships"},
+ 13:{ic:"🚂",ko:"철도",en:"Railways"}, 14:{ic:"🚀",ko:"우주",en:"Space"}, 15:{ic:"🪖",ko:"군용 차량",en:"Military vehicles"},
+ 16:{ic:"🚜",ko:"중장비",en:"Heavy machinery"}, 17:{ic:"🔔",ko:"종",en:"Bells"}, 18:{ic:"🗿",ko:"동상·기념물",en:"Statues & monuments"},
+ 19:{ic:"💎",ko:"보석·유물",en:"Gems & treasures"}, 20:{ic:"🪙",ko:"동전·지폐",en:"Coins & bills"}, 21:{ic:"🏆",ko:"스포츠",en:"Sports"},
+ 22:{ic:"📱",ko:"전자기기",en:"Electronics"}, 23:{ic:"🏛️",ko:"건축물·구조물",en:"Structures"}, 24:{ic:"🎹",ko:"생활·악기",en:"Everyday & instruments"}
+};
+const catName = c => { const x=CATS[c]; return x ? (L==="ko"?x.ko:x.en) : ""; };
+/* ===== 무게 기준 (같은 동물·차라도 기준이 다르면 답이 달라지므로 문제 아래에 표시) ===== */
+const QUAL={AM:["Adult male, average","수컷 성체 평균"],AF:["Adult female, average","암컷 성체 평균"],AA:["Adult, average","성체 평균"],
+ STD:["Breed standard, average","견종 표준 평균"],EST:["Estimate","추정치"],USDA:["Medium size (USDA)","중간 크기 (USDA 기준)"],
+ CW:["Curb weight","공차중량"],DRY:["Dry weight","건조중량"],MTOW:["Max takeoff weight","최대 이륙 중량"],EW:["Empty weight","자체 중량"],
+ FL:["Full-load displacement","만재 배수량"],DISP:["Displacement","배수량"],SUB:["Submerged displacement","수중 배수량"],
+ LM:["Total mass at liftoff","발사 시 전체 질량"],LAUNCH:["Launch mass","발사 질량"],CB:["Combat weight","전투 중량"],
+ LOCO:["Locomotive + tender","기관차 + 탄수차"],REG:["Official regulation","공식 규격"],TOT:["Total weight","전체 무게"],
+ SPEC:["Official spec","공식 제원"],M:["",""]};
+function qualOf(m){
+  const c=String(m[1]||"");
+  if(c.startsWith("~")){ const p=c.split("~"); return L==="ko"?(p[2]||p[1]):p[1]; }
+  const q=QUAL[c]; return q ? q[L==="ko"?1:0] : "";
+}
+function mtName(m){ return (L==="ko" && m[3]) ? m[3] : m[0]; }
+
+/* ===== 무게 단위 =====
+   내부 계산은 전부 kg. 화면 표시는 크기에 맞춰 g/kg/t (또는 oz/lb/ton)로 자동 전환.
+   입력은 숫자 + 단위 선택 (마지막에 고른 단위를 기억) */
+const UNITSYS={ metric:[["g",0.001],["kg",1],["t",1000]], imperial:[["oz",0.028349523125],["lb",0.45359237],["ton",907.18474]] };
+let usys = localStorage.getItem("wl_usys")==="imperial" ? "imperial" : "metric";
+let inUnit = localStorage.getItem("wl_inunit_"+usys) || (usys==="metric"?"kg":"lb");
+const unitFactor = u => { for(const s of Object.values(UNITSYS)) for(const [n,f] of s) if(n===u) return f; return 1; };
+function wParts(kg){
+  let u,v;
+  if(usys==="metric"){ if(kg<1){u="g";v=kg*1000;} else if(kg<1000){u="kg";v=kg;} else {u="t";v=kg/1000;} }
+  else { const lb=kg/0.45359237; if(lb<1){u="oz";v=kg/0.028349523125;} else if(lb<2000){u="lb";v=lb;} else {u="ton";v=kg/907.18474;} }
+  const d = v<1 ? 3 : v<10 ? 2 : v<100 ? 1 : 0;
+  return {v,u,d};
+}
+const fmtNum = (v,d) => Number(v.toFixed(d)).toLocaleString(undefined,{maximumFractionDigits:d});
+function fmtW(kg){ const p=wParts(kg); return fmtNum(p.v,p.d)+" "+p.u; }
+function renderUnitSeg(){
+  const box=$("useg"); box.innerHTML="";
+  if(!UNITSYS[usys].some(([n])=>n===inUnit)) inUnit=usys==="metric"?"kg":"lb";
+  UNITSYS[usys].forEach(([n])=>{
+    const b=document.createElement("button"); b.type="button"; b.textContent=n; b.className=n===inUnit?"on":"";
+    b.onclick=()=>{ inUnit=n; localStorage.setItem("wl_inunit_"+usys,n); renderUnitSeg(); const g=$("guess"); if(!g.disabled) g.focus(); };
+    box.appendChild(b);
+  });
+}
+
+/* ===== 점수 (Peakle과 동일) =====
+   라운드 점수 0~5000. 오직 "실제 무게와 얼마나 차이 나는가"로만 계산.
+   오차 2% 이내 만점, 10%≈4,300점, 30%≈3,200점, 50%≈2,400점 */
+const MAXPTS=5000, START_HP=1000, APP_VER=1;
+function calcScore(guessKg, actualKg){
+  if(guessKg==null||guessKg<=0) return 0;
+  const r=Math.abs(guessKg-actualKg)/actualKg;   // 실제 무게 대비 차이의 비율
+  if(r<=0.02) return MAXPTS;
+  return Math.round(MAXPTS*Math.exp(-1.5*r));
+}
+/* ===== 개인 배수 (Peakle과 동일) =====
+   - 두 사람 모두 ×1로 시작
+   - 라운드에서 상대보다 가깝게 맞히면 → 내 배수 +0.5 (다음 라운드부터 적용)
+   - 진 라운드: 배수 유지 (LOSE_RESET=true로 바꾸면 ×1로 초기화)
+   - 비긴 라운드: 둘 다 그대로 */
+const MULT_STEP=0.5, LOSE_RESET=false;
+const nextMult=(m,won,lost)=> won ? m+MULT_STEP : (lost&&LOSE_RESET ? 1 : m);
+/* ===== 대결 데미지 (Peakle과 동일) =====
+   각자의 오차(kg) = |추측 - 실제|. 시간 초과는 0kg을 적은 것으로 처리(오차 = 실제 무게).
+   오차가 작은 쪽이 이기고, 두 사람 오차의 차이(kg) × 이긴 쪽 배수 만큼 진 쪽 체력이 깎임. (단위가 lb여도 계산은 kg) */
+const errOf = (g,act) => (g==null||g<0) ? act : Math.abs(g-act);
+function resolveRound(eA,eB,mA,mB){
+  const diff=Math.abs(eA-eB);
+  if(eA<eB) return {a:0,b:Math.round(diff*mA),mA:nextMult(mA,true,false),mB:nextMult(mB,false,true),usedA:mA,usedB:mB};
+  if(eB<eA) return {a:Math.round(diff*mB),b:0,mA:nextMult(mA,false,true),mB:nextMult(mB,true,false),usedA:mA,usedB:mB};
+  return {a:0,b:0,mA,mB,usedA:mA,usedB:mB};
+}
+
+/* 시드 랜덤 (데일리용) */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const dailyNum = () => Math.floor((Date.now()-LAUNCH_UTC)/86400000)+1;
+
+/* 카테고리별 인덱스.
+   일반전: 매 문제마다 전체 카테고리에서 무작위. 문제 수가 적은 카테고리가 너무 자주 반복되지 않도록
+   카테고리를 뽑을 확률은 √(문제 수)에 비례.
+   선택전: 고른 카테고리(cats)만 대상으로 같은 방식 */
+const CATIDX={};
+MT.forEach((m,i)=>{const c=m[4]||0;(CATIDX[c]=CATIDX[c]||[]).push(i);});
+const CATKEYS=Object.keys(CATIDX).sort((a,b)=>a-b);
+const poolSize = cats => (cats&&cats.length?cats:CATKEYS).reduce((s,c)=>s+((CATIDX[c]||[]).length),0);
+function pickBalanced(rnd,count,cats){
+  const keys=(cats&&cats.length?cats.map(String):CATKEYS).filter(k=>CATIDX[k]);
+  const w=keys.map(k=>Math.sqrt(CATIDX[k].length)), tot=w.reduce((a,b)=>a+b,0);
+  count=Math.min(count,poolSize(keys));
+  const out=new Set();
+  while(out.size<count){
+    let x=rnd()*tot, i=0; while(i<keys.length-1 && x>=w[i]){ x-=w[i]; i++; }
+    const arr=CATIDX[keys[i]]; out.add(arr[Math.floor(rnd()*arr.length)]);
+  }
+  return [...out];
+}
+const pickBalancedSeeded=(seed,count,cats)=>pickBalanced(mulberry32(seed),count,cats);
+const pickOneBalanced=()=>pickBalanced(Math.random,1)[0];
+
+/* ===== 실사진 =====
+   모든 문제는 사진 주소가 데이터(weights.js)에 미리 들어있고, 전부 사전에 실제 로딩 테스트를 통과한
+   Wikimedia Commons(자유 라이선스) 사진만 사용. 게임 중 위키백과 검색을 하지 않으므로 엉뚱한 사진이나
+   '사진 없음'이 생기지 않음. 로딩 실패 시: 같은 사진 다른 서버 → 처음부터 재시도(끝없이). */
+let photoToken=0, curPhotoFile=null;
+/* 정답 공개 뒤에만 사진 원본 페이지(저작자·라이선스) 링크를 보여줌 → 플레이 중 무게 검색 방지 */
+function showSrcLink(){
+  const a=$("srclink");
+  if(curPhotoFile){ a.href="https://commons.wikimedia.org/wiki/File:"+curPhotoFile; a.textContent="📷 "+t("photo_src"); a.style.display="inline-block"; }
+  else a.style.display="none";
+}
+const IMG_HOSTS=["https://upload.wikimedia.org","https://thumb.wikimedia.org"];
+function photoURLs(m){
+  const out=[];
+  for(const [p,r] of (m[5]||[])){
+    const tt=p.match(/^(.*)\/([^/]+)@(\d+)$/);
+    if(tt) IMG_HOSTS.forEach(hst=>out.push({u:hst+"/wikipedia/commons/thumb/"+tt[1]+"/"+tt[2]+"/"+tt[3]+"px-"+tt[2],file:tt[2],r}));
+    else out.push({u:IMG_HOSTS[0]+"/wikipedia/commons/"+p,file:p.split("/").pop(),r});
+  }
+  return out;
+}
+function tryLoad(u,ms){
+  return new Promise(res=>{
+    const i=new Image();
+    const tm=setTimeout(()=>{i.onload=i.onerror=null;res(null);},ms);
+    i.onload=()=>{clearTimeout(tm);res(i.naturalWidth>40?{u,w:i.naturalWidth,h:i.naturalHeight}:null);};
+    i.onerror=()=>{clearTimeout(tm);res(null);};
+    i.src=u;
+  });
+}
+const photoMemo=new Map();
+function getPhoto(m){
+  const key=m[0];
+  if(photoMemo.has(key)) return photoMemo.get(key);
+  const pr=(async()=>{
+    const list=photoURLs(m);
+    for(let lap=0;lap<2;lap++){
+      for(const c of list){ const ok=await tryLoad(c.u,lap?15000:9000); if(ok) return {...ok,file:c.file}; }
+      await new Promise(s=>setTimeout(s,1200));
+    }
+    return null;
+  })();
+  photoMemo.set(key,pr);
+  pr.then(v=>{ if(!v) photoMemo.delete(key); });   // 실패 기록은 남기지 않음 → 다음에 다시 시도
+  return pr;
+}
+const preloadPhotos=list=>list.forEach(m=>{ if(m) getPhoto(m); });
+function renderPhoto(p){
+  const box=$("mtimg"); box.innerHTML="";
+  const r=p.w/Math.max(1,p.h);
+  box.style.aspectRatio=Math.max(1.0,Math.min(1.78,r)).toFixed(3);
+  if(r<1.55){ // 세로·정방형 사진: 잘리지 않게 전체 표시 + 흐린 배경
+    const bg=new Image(); bg.src=p.u; bg.className="photobg"; bg.draggable=false; box.appendChild(bg);
+  }
+  const img=new Image(); img.src=p.u; img.className="photo"+(r<1.55?" fit":""); img.draggable=false; img.alt="";
+  box.appendChild(img);
+  const a=document.createElement("span");
+  a.className="mtcredit"; a.textContent="© Wikimedia Commons";
+  box.appendChild(a);
+  curPhotoFile=p.file;
+}
+/* 사진을 띄우고, 실제로 화면에 나왔을 때 resolve(true) */
+function showPhoto(m,token){
+  const box=$("mtimg");
+  const r0=(m[5]&&m[5][0]&&m[5][0][1])||0;
+  box.style.aspectRatio=r0?Math.max(1.0,Math.min(1.78,r0)).toFixed(3):"16/9";
+  box.innerHTML='<div class="phload"><div class="spin2"></div><span>'+t("photo_loading")+'</span></div>';
+  return new Promise(resolve=>{
+    const attempt=()=>getPhoto(m).then(p=>{
+      if(token!==photoToken) return resolve(false);
+      if(!p){ setTimeout(attempt,2500); return; }   // 네트워크 문제: 사진이 뜰 때까지 계속 재시도
+      renderPhoto(p); resolve(true);
+    });
+    attempt();
+  });
+}
+
+/* ================= 효과음 (WebAudio 합성) ================= */
+let AC;
+function beep(freqs,dur=.16,gain=.12){
+  if(!sound) return;
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type="sine"; o.frequency.value=f;
+      g.gain.setValueAtTime(0,AC.currentTime+i*dur);
+      g.gain.linearRampToValueAtTime(gain,AC.currentTime+i*dur+.02);
+      g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+(i+1)*dur);
+      o.connect(g).connect(AC.destination);
+      o.start(AC.currentTime+i*dur); o.stop(AC.currentTime+(i+1)*dur+.05);
+    });
+  }catch(e){}
+}
+const sndReveal = good => good ? beep([659,880]) : beep([330,262]);
+const sndWin  = () => beep([523,659,784,1047],.14);
+const sndLose = () => beep([392,330,262],.2);
+
+/* ================= 화면 전환 ================= */
+function screen(n){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));
+  $("s-"+n).classList.add("on");
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ cleanupGame(); screen(b.dataset.go); });
+let toastT;
+function toast(msg){ const el=$("toast"); el.textContent=msg; el.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("on"),2400); }
+
+function applyI18n(){
+  document.querySelectorAll("[data-i]").forEach(el=>{ const v=t(el.dataset.i); if(typeof v==="string") el.textContent=v; });
+  $("b-daily").textContent=t("daily"); $("b-battle").textContent=t("battle");
+  $("b-practice").textContent=t("practice"); $("b-settings").textContent=t("settings");
+  $("b-quick").textContent=t("quick"); $("b-create").textContent=t("create");
+  $("b-copycode").textContent=t("copy_code"); $("b-quitgame").textContent=t("quit");
+  $("b-share-battle").textContent=t("share"); $("b-share-daily").textContent=t("share");
+  $("guess").placeholder=t("guess_ph"); renderUnitSeg();
+  $("b-recover").textContent=t("recover_btn"); $("recode").placeholder=t("recover_ph"); renderStats();
+  $("mtcount").textContent="⚖️ "+MT.length.toLocaleString()+" "+t("mts");
+  $("catcount").textContent="🗂 "+CATKEYS.length+" "+t("cats_n");
+  $("langsel").value=L;
+  $("u-metric").classList.toggle("on",usys==="metric"); $("u-imperial").classList.toggle("on",usys==="imperial");
+  $("snd-on").classList.toggle("on",sound); $("snd-off").classList.toggle("on",!sound);
+  if($("s-room").classList.contains("on")) renderRoomSetup();
+}
+
+/* ================= 공용 게임 렌더 ================= */
+let G = null;           // 현재 게임 상태
+let timerRAF = null, revealTimer = null, unsub = [], matchTimer = null;
+
+function cleanupGame(){
+  cancelAnimationFrame(timerRAF); clearTimeout(revealTimer); clearTimeout(matchTimer);
+  photoToken++; curPhotoFile=null; $("srclink").style.display="none";
+  unsub.forEach(u=>u()); unsub=[];
+  const g=G; G=null;
+  if(g && g.fb){
+    clearTimeout(g.joinTimer);
+    if(g.slotMine){ // 대기 슬롯이 아직 내 것이면 비우기
+      onDisconnect(SLOT()).cancel().catch(()=>{});
+      runTransaction(SLOT(),cur=>(cur&&cur.uid===uid)?null:cur).catch(()=>{});
+    }
+    if(g.roomRef){
+      onDisconnect(ref(db,`rooms/${g.roomId}/players/${uid}/left`)).cancel().catch(()=>{});
+      if(g.iAmHost && g.phase==="lobby") remove(g.roomRef).catch(()=>{});
+      else if(g.phase==="end" && (g.foeLeft||!g.foeUid)) remove(g.roomRef).catch(()=>{}); // 마지막으로 나가는 사람이 방 정리
+      else update(ref(db,`rooms/${g.roomId}/players/${uid}`),{left:true}).catch(()=>{});
+    }
+  }
+}
+
+function showItem(m){
+  photoToken++; curPhotoFile=null; $("srclink").style.display="none";
+  const shown=showPhoto(m,photoToken);
+  const c=CATS[m[4]||0]||{ic:"⚖️"};
+  $("mticon").textContent = c.ic;
+  $("mtname").textContent = mtName(m);
+  const q=qualOf(m);
+  $("mtqual").textContent = q;
+  $("mtqual").style.display = q ? "block" : "none";
+  $("mtsub").textContent = catName(m[4]) + ((L==="ko"&&m[3]) ? " · "+m[0] : "");
+  $("guess").value=""; $("guess").disabled=false; $("b-submit").disabled=false;
+  $("waitmsg").textContent="";
+  $("guessarea").style.display="block"; $("revealarea").style.display="none";
+  renderUnitSeg();
+  setTimeout(()=>$("guess").focus(),80);
+  return shown;
+}
+/* 혼자 하는 모드: 사진이 화면에 뜬 뒤에 15초 타이머 시작 (최대 8초 대기) */
+function startTimerWhenShown(shown,onExpire){
+  const g0=G, tok=photoToken;
+  $("timerfill").style.width="100%";
+  Promise.race([shown,new Promise(s=>setTimeout(s,8000))]).then(()=>{
+    if(G!==g0||tok!==photoToken||!G||G.locked) return;
+    G.deadline=now()+15000; runTimer(G.deadline,onExpire);
+  });
+}
+function runTimer(deadline,onExpire){
+  cancelAnimationFrame(timerRAF);
+  const total=15000;
+  const tick=()=>{
+    const left=Math.max(0,deadline-now());
+    $("timerfill").style.width=(left/total*100)+"%";
+    $("timerfill").style.background=left<4000?"var(--bad)":"linear-gradient(90deg,var(--ice),var(--glow))";
+    if(left<=0){ onExpire&&onExpire(); return; }
+    timerRAF=requestAnimationFrame(tick);
+  };
+  tick();
+}
+/* 정답 숫자 카운트업: 정답 크기에 맞는 단위(g/kg/t)로 고정해서 0부터 올라감 */
+function countUp(el,kg){
+  const p=wParts(kg), t0=performance.now(), dur=900;
+  const step=n=>{const q=Math.min(1,(n-t0)/dur),e=1-Math.pow(1-q,3);
+    el.textContent=fmtNum(p.v*e,p.d)+" "+p.u;
+    if(q<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+function cmpBox(who,val,sub,isPts){
+  return `<div class="cmpbox"><div class="cmpwho">${esc(who)}</div><div class="cmpval">${val}</div><div class="cmpdmg${isPts?" pts":""}">${sub}</div></div>`;
+}
+const pctOf=(g,act)=>Math.round(Math.abs(g-act)/act*100);
+const errText=(g,act)=> t("err")+" "+fmtW(Math.abs(g-act))+" ("+pctOf(g,act).toLocaleString()+"%)";
+
+/* ================= 싱글 (데일리 / 연습) ================= */
+const DAILY_KEY="wl_d1_";
+const DPROG="wl_dprog_";      // 데일리 진행상황 (나갔다가 이어하기)
+async function startSolo(mode){
+  if(!await ensureNick(false)) return;
+  const dn=dailyNum();
+  let prog=null;
+  if(mode==="daily"){
+    const saved=localStorage.getItem(DAILY_KEY+dn);
+    if(saved){ showDailyResult(JSON.parse(saved),dn); return; }
+    const srv=await serverDaily(dn);                 // 다른 기기에서 이미 했는지 (닉네임 기준)
+    if(srv){ localStorage.setItem(DAILY_KEY+dn,JSON.stringify(srv)); showDailyResult(srv,dn); return; }
+    try{ prog=JSON.parse(localStorage.getItem(DPROG+dn)||"null"); }catch(e){ prog=null; }
+    // 사진을 본 뒤 창을 닫았던 라운드는 0점 처리 (닫고 검색한 뒤 다시 들어오는 것 방지)
+    if(prog && prog.seen===prog.r){ prog.p.push(0); prog.r++; prog.seen=0; }
+  }
+  G={mode, fb:false, round:prog?prog.r:1, pts:prog?prog.p:[], guesses:[], used:new Set(), next:null,
+     mts: mode==="daily" ? pickBalancedSeeded(dn*7919+13,5) : null,
+     total: mode==="daily" ? 5 : Infinity };
+  if(mode==="daily" && G.round>5){ finishDaily(); return; }
+  if(G.mts) preloadPhotos(G.mts.slice(G.round-1).map(i=>MT[i]));
+  $("hparea").style.display="none"; $("multbadge").style.display="none";
+  $("b-quitgame").style.display="block";
+  screen("game"); soloRound();
+}
+function saveDailyProg(seen){
+  if(!G||G.mode!=="daily") return;
+  localStorage.setItem(DPROG+dailyNum(),JSON.stringify({r:G.round,p:G.pts,seen:seen?G.round:0}));
+}
+function finishDaily(){
+  const dn=dailyNum(), res={s:G.pts.reduce((a,b)=>a+b,0),p:G.pts.slice(0,5)};
+  localStorage.setItem(DAILY_KEY+dn,JSON.stringify(res));
+  localStorage.removeItem(DPROG+dn);
+  recordDaily(dn,res);
+  showDailyResult(res,dn);
+}
+function soloRound(){
+  let idx;
+  if(G.mode==="daily"){ idx=G.mts[G.round-1]; }
+  else{ // 연습: 이번 판에 나온 문제는 다시 안 나옴 (전부 소진 시 초기화) + 다음 문제 사진 미리 받기
+    if(G.used.size>=MT.length) G.used.clear();
+    const pickUnused=()=>{ let k; do{ k=pickOneBalanced(); }while(G.used.has(k)); return k; };
+    idx=(G.next!=null&&!G.used.has(G.next))?G.next:pickUnused();
+    G.used.add(idx);
+    G.next=G.used.size<MT.length?pickUnused():null;
+    if(G.next!=null) preloadPhotos([MT[G.next]]);
+  }
+  G.cur=idx;
+  const m=MT[idx];
+  if(G.mode==="daily") saveDailyProg(true);
+  $("roundtxt").textContent = t("round")+" "+G.round+(G.mode==="daily"?" / 5":"");
+  const sum=G.pts.reduce((a,b)=>a+b,0);
+  $("scoretxt").textContent = G.mode==="practice" && G.pts.length
+    ? t("avg_pts")+" "+Math.round(sum/G.pts.length).toLocaleString() : (G.mode==="daily"? sum.toLocaleString()+t("pts") : "");
+  startTimerWhenShown(showItem(m),()=>soloSubmit(null));
+}
+function soloSubmit(guessKg){
+  if(!G||G.locked)return; G.locked=true;
+  cancelAnimationFrame(timerRAF);
+  const m=MT[G.cur], actual=m[2];
+  const pts=calcScore(guessKg,actual);
+  G.pts.push(pts); G.guesses.push(guessKg);
+  if(G.mode==="daily"){ G.round++; saveDailyProg(false); G.round--; }
+  $("guessarea").style.display="none"; $("revealarea").style.display="block"; showSrcLink();
+  countUp($("altnum"),actual);
+  const err = guessKg==null?t("timeout"):errText(guessKg,actual);
+  $("cmparea").innerHTML=cmpBox(t("me"),guessKg==null?"—":fmtW(guessKg),err+" · +"+pts.toLocaleString()+t("pts"),true);
+  $("nextmsg").textContent=t("next_in");
+  sndReveal(pts>=3500);
+  revealTimer=setTimeout(()=>{
+    if(!G) return;
+    G.locked=false; G.round++;
+    if(G.mode==="daily"&&G.round>5) finishDaily();
+    else soloRound();
+  },3200);
+}
+const emOf=p=>p>=4500?"🎯":p>=3500?"⚖️":p>=2000?"📦":"🪶";
+function showDailyResult(res,dn){
+  cleanupGame();
+  $("dailytitle").textContent=t("daily_title")+" #"+dn;
+  $("dailyscore").textContent=res.s.toLocaleString();
+  $("dailyemoji").textContent=res.p.map(emOf).join("");
+  $("dailydetail").innerHTML=res.p.map((p,i)=>`${t("round")} ${i+1} — ${emOf(p)} ${p.toLocaleString()}${t("pts")}`).join("<br>");
+  $("b-share-daily").onclick=()=>share(STR[L].share_daily(dn,res.s,res.p.map(emOf).join(""))+location.href);
+  screen("daily-result");
+}
+
+/* ================= 1대1 대결 공통 UI ================= */
+function battleUIBase(myNick,foeNick){
+  $("hparea").style.display="block"; $("b-quitgame").style.display="none";
+  $("myname").textContent=myNick; $("foename").textContent=foeNick;
+  setHP(START_HP,START_HP);
+  $("mymult").dataset.v=""; $("foemult").dataset.v=""; setMult(1,1);
+}
+function setHP(me,foe){
+  $("myhp").style.width=Math.max(0,me/START_HP*100)+"%"; $("foehp").style.width=Math.max(0,foe/START_HP*100)+"%";
+  $("myhpn").textContent=Math.max(0,me).toLocaleString(); $("foehpn").textContent=Math.max(0,foe).toLocaleString();
+}
+function battleRoundUI(r){
+  $("roundtxt").textContent=t("round")+" "+r+" / 15";
+  $("scoretxt").textContent="";
+  $("multbadge").style.display="none";
+}
+const fmtM=m=>"×"+(+m).toString();
+function setMult(me,foe){
+  [["mymult",me],["foemult",foe]].forEach(([id,m])=>{
+    const el=$(id); m=m||1;
+    if(el.textContent!==fmtM(m)&&el.dataset.v){ el.classList.add("bump"); setTimeout(()=>el.classList.remove("bump"),300); }
+    el.textContent=fmtM(m); el.dataset.v="1";
+    el.className="mchip"+(m>=3?" fire":m>1?" hot":"")+(el.classList.contains("bump")?" bump":"");
+  });
+}
+function multNote(me,foe){ return t("next_mult")+" "+t("me")+" "+fmtM(me||1)+" · "+t("foe")+" "+fmtM(foe||1); }
+/* 비교 박스: 추측값 · 오차 · 공격/피해 */
+function cmpBattle(who,guessKg,actual,taken,dealt,usedMult){
+  const guessStr = guessKg==null||guessKg<0 ? "—" : fmtW(guessKg);
+  const errStr = guessKg==null||guessKg<0 ? t("timeout") : errText(guessKg,actual);
+  const line = dealt>0 ? `<div class="cmpdmg pts">⚔️ ${dealt.toLocaleString()} ${t("attack")} (${fmtM(usedMult||1)})</div>`
+             : taken>0 ? `<div class="cmpdmg">-${taken.toLocaleString()} HP</div>`
+             : `<div class="cmpdmg" style="color:var(--dim)">${t("tie")}</div>`;
+  return `<div class="cmpbox"><div class="cmpwho">${esc(who)}</div><div class="cmpval">${guessStr}</div><div class="cmppts" style="color:var(--ice)">${errStr}</div>${line}</div>`;
+}
+/* 방 모드 설명 한 줄 (일반전 / 선택전: 카테고리 목록) */
+function modeLine(cats){
+  if(!cats||!cats.length) return t("mode_line_normal");
+  const names=cats.map(c=>(CATS[c]?CATS[c].ic+" ":"")+catName(c));
+  return t("mode_line_select")+(names.length>3 ? names.slice(0,3).join(", ")+STR[L].more(names.length-3) : names.join(", "));
+}
+
+/* --- 봇 대결 (오프라인) --- */
+function startBotGame(){
+  const myNick=localStorage.getItem("wl_nick")||nickname();
+  const foe=BOTNAMES[Math.floor(Math.random()*BOTNAMES.length)];
+  G={mode:"bot",fb:false,round:1,myHP:START_HP,foeHP:START_HP,myMult:1,foeMult:1,foeNick:foe,
+     mts:pickBalancedSeeded(Math.floor(Math.random()*1e9),15)};
+  preloadPhotos(G.mts.map(i=>MT[i]));
+  battleUIBase(myNick,foe); screen("game"); botRound();
+}
+function botRound(){
+  const m=MT[G.mts[G.round-1]];
+  battleRoundUI(G.round); setMult(G.myMult,G.foeMult);
+  G.myGuess=undefined; G.deadline=now()+60000;
+  const shown=showItem(m);
+  // 봇: 실제무게 ±(10~40%) 추측 (약간 약하게)
+  const e=(0.10+Math.random()*0.30)*(Math.random()<.5?-1:1);
+  G.botGuess=Math.max(0.000001,+(m[2]*(1+e)).toPrecision(3));
+  startTimerWhenShown(shown,()=>{ if(G&&G.myGuess===undefined) botSubmit(null); });
+}
+function botSubmit(guessKg){
+  if(!G||G.myGuess!==undefined)return;
+  G.myGuess = guessKg;
+  $("guess").disabled=true;$("b-submit").disabled=true;
+  $("waitmsg").textContent=t("submit_done");
+  const wait=Math.max(0, (4000+Math.random()*7000)-(15000-(G.deadline-now())));
+  revealTimer=setTimeout(()=>botReveal(),Math.min(wait, Math.max(0,G.deadline-now())));
+}
+function botReveal(){
+  if(!G) return;
+  cancelAnimationFrame(timerRAF);
+  const m=MT[G.mts[G.round-1]],actual=m[2];
+  const eMe=errOf(G.myGuess,actual), eFoe=errOf(G.botGuess,actual);
+  const d=resolveRound(eMe,eFoe,G.myMult,G.foeMult);
+  G.myHP-=d.a; G.foeHP-=d.b; G.myMult=d.mA; G.foeMult=d.mB;
+  $("guessarea").style.display="none"; $("revealarea").style.display="block";
+  countUp($("altnum"),actual); setHP(G.myHP,G.foeHP);
+  $("cmparea").innerHTML =
+    cmpBattle(t("me"),G.myGuess,actual,d.a,d.b,d.usedA) +
+    cmpBattle(G.foeNick,G.botGuess,actual,d.b,d.a,d.usedB);
+  setMult(G.myMult,G.foeMult); showSrcLink();
+  sndReveal(eMe<=eFoe);
+  const dead=G.myHP<=0||G.foeHP<=0, last=G.round>=15;
+  $("nextmsg").textContent = dead||last ? "" : multNote(G.myMult,G.foeMult);
+  revealTimer=setTimeout(()=>{
+    if(!G) return;
+    if(dead||last){ endBattle(G.myHP,G.foeHP,G.foeNick,false,"bot"); }
+    else{ G.round++; botRound(); }
+  },4200);
+}
+
+/* --- 결과 화면 (봇/온라인 공용) ---
+   mode "bot": 다시 하기 = 새 봇전
+   mode "net": 방을 유지한 채 재대결 대기 (G 유지) */
+let lastBattleMode=null;
+function endBattle(myHP,foeHP,foeNick,walkover,mode){
+  lastBattleMode=mode;
+  if(mode==="net"&&G){ cancelAnimationFrame(timerRAF); clearTimeout(revealTimer); G.phase="end"; }
+  else cleanupGame();
+  const win = walkover ? true : myHP>foeHP, draw=!walkover&&myHP===foeHP;
+  $("restitle").textContent=draw?t("draw"):win?t("win"):t("lose");
+  $("restitle").className="bigres "+(draw?"draw":win?"win":"lose");
+  $("ressub").textContent=walkover?t("opp_left"):draw?t("draw_sub"):win?t("win_sub"):t("lose_sub");
+  $("r-myname").textContent=localStorage.getItem("wl_nick");$("r-foename").textContent=foeNick;
+  $("r-myhp").textContent="HP "+Math.max(0,myHP).toLocaleString();
+  $("r-foehp").textContent="HP "+Math.max(0,foeHP).toLocaleString();
+  const w=draw?t("draw"):win?t("win"):t("lose");
+  $("b-share-battle").onclick=()=>share(STR[L].share_battle(w,localStorage.getItem("wl_nick"),foeNick)+location.href);
+  // 재대결 버튼
+  const rb=$("b-rematch");
+  rb.disabled = walkover;   // 상대가 나간 경우 재대결 불가
+  rb.textContent = mode==="bot" ? t("rematch_bot") : t("rematch");
+  $("rematchmsg").textContent = walkover ? t("opp_gone") : "";
+  draw?0:win?sndWin():sndLose();
+  if(mode==="net") recordBattle(draw?"draws":win?"wins":"losses");
+  screen("result");
+}
+$("b-rematch").onclick=()=>{
+  if(lastBattleMode==="bot"){ cleanupGame(); startBotGame(); return; }
+  if(G&&G.mode==="net"&&G.phase==="end"&&!G.foeLeft){
+    set(ref(db,`rooms/${G.roomId}/rematch/${uid}`),true).catch(()=>{});
+    $("b-rematch").disabled=true; $("rematchmsg").textContent=t("rematch_wait");
+  }
+};
+
+/* ================= 온라인 공통 ================= */
+const CODE=()=> Array.from({length:5},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
+const ROOMVER=()=>window.WEIGHTS_VERSION*100+APP_VER;   // 데이터·규칙이 같은 사람끼리만 매칭
+
+/* ---------- 빠른 매칭 (항상 일반전) ----------
+   전 세계 공용 대기 슬롯 1개(queue/_slot)를 트랜잭션으로 다룸.
+   - 슬롯이 비었거나 오래됐으면 → 내가 대기자로 들어감
+   - 다른 사람이 대기 중이면   → 그 사람을 꺼내고 내가 방장이 됨
+   Firebase 트랜잭션은 첫 실행 때 로컬값(대개 빈 값)으로 돌기 때문에,
+   빈 값에서 '중단'하지 않고 항상 값을 반환해야 서버값으로 재실행됨 */
+const SLOT=()=>ref(db,"queue/_slot");
+/* 1시간 넘게 방치된 방 청소 (둘 다 창을 닫아 남은 방) — 한 번에 최대 10개 */
+let lastSweep=0;
+function sweepOldRooms(){
+  if(Date.now()-lastSweep<600000) return; lastSweep=Date.now();
+  get(query(ref(db,"rooms"),orderByChild("created"),endAt(now()-3600000),limitToFirst(10)))
+    .then(s=>s.forEach(c=>{ remove(c.ref).catch(()=>{}); })).catch(()=>{});
+}
+const SLOT_FRESH=35000;
+async function quickMatch(startTs){
+  if(!await ensureNick(true)) return;
+  const n=nickname();
+  sweepOldRooms();
+  startTs=startTs||Date.now();
+  cleanupGame();
+  $("waittitle").textContent=t("matching"); $("waitdesc").textContent=t("matching_desc");
+  $("roomcodebox").style.display="none"; $("b-copycode").style.display="none"; $("roommode").textContent="";
+  screen("wait");
+  const me={mode:"net",fb:true,phase:"matching",matching:true,startTs};
+  G=me;
+  try{
+    // 지난 세션의 초대장 찌꺼기 제거
+    await remove(ref(db,"invites/"+uid));
+    let opp=null;
+    const res=await runTransaction(SLOT(),cur=>{
+      opp=null;
+      const fresh=cur&&cur.uid&&cur.v===ROOMVER()&&(now()-(cur.ts||0)<SLOT_FRESH);
+      if(fresh&&cur.uid!==uid){ opp={uid:cur.uid,nick:cur.nick}; return null; } // 대기자 꺼내기
+      return {uid,nick:n,ts:now(),v:ROOMVER()};                                // 내가 대기
+    });
+    if(G!==me) return;                      // 그 사이 취소됨
+    if(!res.committed) throw new Error("tx");
+    if(opp){                                // ▶ 방장: 방 만들고 초대
+      me.matching=false;
+      const roomId=CODE();
+      await createRoom(roomId,n,true,null);
+      if(G!==me){ remove(ref(db,"rooms/"+roomId)).catch(()=>{}); return; }
+      await set(ref(db,"invites/"+opp.uid),{room:roomId,ts:now()});
+      enterRoom(roomId,true,{quick:true,startTs});
+      return;
+    }
+    // ▶ 대기자: 초대장 기다리기
+    me.slotMine=true;
+    onDisconnect(SLOT()).remove();
+    const invRef=ref(db,"invites/"+uid);
+    onValue(invRef,async s=>{
+      if(G!==me||!s.exists()) return;
+      const inv=s.val(); if(!inv||!inv.room||now()-(inv.ts||0)>20000) return;
+      off(invRef); remove(invRef).catch(()=>{});
+      onDisconnect(SLOT()).cancel(); me.slotMine=false; me.matching=false;
+      clearTimeout(matchTimer);
+      await joinQuickRoom(inv.room,n,me,startTs);
+    });
+    unsub.push(()=>off(invRef));
+    const left=Math.max(3000,30000-(Date.now()-startTs));
+    matchTimer=setTimeout(()=>giveUpWaiting(me,invRef),left);
+  }catch(e){
+    if(G===me){ cleanupGame(); startBotGame(); }
+  }
+}
+async function giveUpWaiting(me,invRef){
+  if(G!==me) return;
+  // 슬롯이 아직 내 것이면 비우고 봇전. 이미 누가 꺼내갔다면(초대장 오는 중) 조금 더 기다림
+  let stillMine=false;
+  try{
+    await runTransaction(SLOT(),cur=>{ stillMine=!!(cur&&cur.uid===uid); return stillMine?null:cur; });
+  }catch(e){ stillMine=true; }
+  if(G!==me) return;
+  onDisconnect(SLOT()).cancel(); me.slotMine=false;
+  if(stillMine){ off(invRef); cleanupGame(); startBotGame(); }
+  else matchTimer=setTimeout(()=>{ if(G===me){ off(invRef); cleanupGame(); startBotGame(); } },8000);
+}
+async function joinQuickRoom(roomId,n,me,startTs){
+  const s=await get(ref(db,"rooms/"+roomId));
+  if(G!==me) return;
+  if(!s.exists()||s.val().ver!==ROOMVER()){ quickMatch(startTs); return; }
+  await update(ref(db,`rooms/${roomId}`),{[`members/${AUID}`]:true,[`players/${uid}`]:{nick:n,hp:START_HP}});
+  onDisconnect(ref(db,`rooms/${roomId}/players/${uid}/left`)).set(true);
+  if(G!==me) return;
+  enterRoom(roomId,false,{quick:true,startTs});
+}
+
+/* ---------- 친구 방: 일반전 / 선택전 설정 ---------- */
+let roomSel = localStorage.getItem("wl_roommode")==="select";
+let roomCats; try{ roomCats=JSON.parse(localStorage.getItem("wl_roomcats")||"[]").map(Number).filter(c=>CATIDX[c]); }catch(e){ roomCats=[]; }
+function saveRoomPrefs(){ localStorage.setItem("wl_roommode",roomSel?"select":"normal"); localStorage.setItem("wl_roomcats",JSON.stringify(roomCats)); }
+function renderRoomSetup(){
+  $("m-normal").classList.toggle("on",!roomSel); $("m-select").classList.toggle("on",roomSel);
+  $("modedesc").textContent=t(roomSel?"mode_select_desc":"mode_normal_desc");
+  $("catpick").style.display=roomSel?"block":"none";
+  const box=$("cats"); box.innerHTML="";
+  CATKEYS.forEach(k=>{
+    const c=+k, b=document.createElement("button"); b.type="button";
+    b.className="chip"+(roomCats.includes(c)?" on":"");
+    b.innerHTML=`${CATS[c].ic} ${esc(catName(c))} <small>${CATIDX[k].length}</small>`;
+    b.onclick=()=>{ roomCats=roomCats.includes(c)?roomCats.filter(x=>x!==c):[...roomCats,c].sort((a,b)=>a-b); saveRoomPrefs(); renderRoomSetup(); };
+    box.appendChild(b);
+  });
+  $("catsum").textContent=roomCats.length?STR[L].cat_sum(roomCats.length,poolSize(roomCats)):"";
+}
+$("m-normal").onclick=()=>{ roomSel=false; saveRoomPrefs(); renderRoomSetup(); };
+$("m-select").onclick=()=>{ roomSel=true; saveRoomPrefs(); renderRoomSetup(); };
+$("b-catall").onclick=()=>{ roomCats=CATKEYS.map(Number); saveRoomPrefs(); renderRoomSetup(); };
+$("b-catnone").onclick=()=>{ roomCats=[]; saveRoomPrefs(); renderRoomSetup(); };
+
+/* ---------- 친구 방 ---------- */
+async function createRoom(roomId,nick,quick,cats){
+  await set(ref(db,"rooms/"+roomId),{
+    created:now(), host:uid, ver:ROOMVER(), quick:!!quick, game:1,
+    cats: cats&&cats.length ? cats : null,
+    mts:pickBalancedSeeded(Math.floor(Math.random()*1e9),15,cats),
+    members:{[AUID]:true},
+    players:{[uid]:{nick,hp:START_HP}},
+    state:{phase:"lobby",round:0}
+  });
+  onDisconnect(ref(db,`rooms/${roomId}/players/${uid}/left`)).set(true);
+}
+async function createFriendRoom(){
+  const cats = roomSel ? roomCats.slice() : null;
+  if(roomSel && !cats.length){ toast(t("need_cat")); return; }
+  if(roomSel && poolSize(cats)<15){ toast(t("need_more")); return; }
+  if(!await ensureNick(true)) return;
+  const n=nickname();
+  cleanupGame();
+  const roomId=CODE();
+  await createRoom(roomId,n,false,cats);
+  $("waittitle").textContent=t("room_wait"); $("waitdesc").textContent=t("room_desc");
+  $("roomcodebox").style.display="block"; $("roomcodebox").textContent=roomId;
+  $("roommode").textContent=modeLine(cats);
+  $("b-copycode").style.display="block";
+  $("b-copycode").onclick=()=>{navigator.clipboard.writeText(roomId).then(()=>toast(t("copied")));};
+  screen("wait");
+  enterRoom(roomId,true,{});
+}
+async function joinRoom(){
+  if(!await ensureNick(true)) return;
+  const n=nickname();
+  const roomId=($("joincode").value||"").trim().toUpperCase();
+  const s=await get(ref(db,"rooms/"+roomId));
+  if(!s.exists()){toast(t("no_room"));return;}
+  const room=s.val();
+  const active=Object.values(room.players||{}).filter(p=>!p.left);
+  if(active.length>=2){toast(t("room_full"));return;}
+  if(room.ver!==ROOMVER()){toast(t("version_err"));return;}
+  cleanupGame();
+  await update(ref(db,`rooms/${roomId}`),{[`members/${AUID}`]:true,[`players/${uid}`]:{nick:n,hp:START_HP}});
+  onDisconnect(ref(db,`rooms/${roomId}/players/${uid}/left`)).set(true);
+  enterRoom(roomId,false,{});
+}
+
+/* ---------- 방 진행 (로비 → 라운드 → 결과 → 재대결) ---------- */
+function enterRoom(roomId,iAmHost,opts){
+  opts=opts||{};
+  const me0={mode:"net",fb:true,roomId,iAmHost,roomRef:ref(db,"rooms/"+roomId),
+             phase:"lobby",shownRound:0,hostActing:iAmHost,game:undefined};
+  G=me0;
+  const rref=me0.roomRef;
+  // 빠른매칭 방장: 상대가 8초 안에 안 들어오면(유령 대기자) 방 지우고 다시 매칭
+  if(opts.quick&&iAmHost){
+    me0.joinTimer=setTimeout(()=>{
+      if(G===me0&&me0.phase==="lobby"&&!me0.foeUid){ toast(t("join_fail")); quickMatch(opts.startTs); }
+    },8000);
+  }
+  onValue(rref,snap=>{
+    if(G!==me0) return;
+    if(!snap.exists()){
+      if(me0.phase==="end"){ me0.foeLeft=true; $("b-rematch").disabled=true; $("rematchmsg").textContent=t("opp_gone"); }
+      else { cleanupGame(); screen("home"); }
+      return;
+    }
+    const room=snap.val();
+    if(room.mts&&me0.preloadedFor!==room.game){ me0.preloadedFor=room.game; preloadPhotos(room.mts.map(i=>MT[i])); }
+    const players=room.players||{};
+    const foeUid=Object.keys(players).find(k=>k!==uid);
+    const me=players[uid], foe=foeUid?players[foeUid]:null;
+    if(!me) return;
+    me0.foeUid=foeUid; me0.foeLeft=!!(foe&&foe.left);
+    me0.cats=room.cats||null;
+
+    // 재대결로 새 판이 시작됐는지 감지 → 로컬 상태 초기화
+    const gameNo=room.game||1;
+    if(me0.game===undefined) me0.game=gameNo;
+    else if(gameNo!==me0.game){
+      me0.game=gameNo; me0.phase="lobby"; me0.shownRound=0; me0.submitted=false;
+      me0.advancing=false; me0.resetting=false;
+      $("b-rematch").disabled=false; $("rematchmsg").textContent="";
+    }
+
+    // 결과 화면에서: 상대 이탈/재대결 요청 처리
+    if(me0.phase==="end"){
+      if(me0.foeLeft){ $("b-rematch").disabled=true; $("rematchmsg").textContent=t("opp_gone"); return; }
+      const rm=room.rematch||{};
+      if(rm[uid]&&foeUid&&rm[foeUid]){ if(room.host===uid||me0.hostActing) hostRematch(room); }
+      else if(foeUid&&rm[foeUid]&&!rm[uid]) $("rematchmsg").textContent=t("rematch_req");
+      return;
+    }
+
+    // 대전 중 상대 이탈 → 부전승
+    if(foe&&foe.left&&room.state.phase!=="end"&&room.state.phase!=="lobby"){
+      endBattle(me.hp,foe.hp,foe.nick,true,"net");
+      return;
+    }
+    if(room.host!==uid && players[room.host] && players[room.host].left) me0.hostActing=true;
+    if(room.host===uid) me0.hostActing=true;
+
+    if(room.state.phase==="lobby"){
+      if(foe && !foe.left && me0.hostActing && !me0.startSent){
+        me0.startSent=true; clearTimeout(me0.joinTimer);
+        update(ref(db,`rooms/${roomId}/state`),{phase:"guess",round:1,deadline:now()+16000});
+      }
+      return;
+    }
+    clearTimeout(me0.joinTimer);
+    if(room.state.phase==="guess") netGuessPhase(room,me,foe);
+    if(room.state.phase==="reveal") netRevealPhase(room,me,foe);
+    if(room.state.phase==="end"){
+      endBattle(me.hp,foe?foe.hp:0,foe?foe.nick:"?",false,"net");
+    }
+  });
+  unsub.push(()=>off(rref));
+}
+async function hostRematch(room){
+  if(!G||G.resetting) return; G.resetting=true;
+  const cats=room.cats||null;   // 선택전이면 같은 카테고리로 재대결
+  const upd={
+    mts:pickBalancedSeeded(Math.floor(Math.random()*1e9),15,cats),
+    guesses:null, rematch:null, game:(room.game||1)+1,
+    state:{phase:"guess",round:1,deadline:now()+16000}
+  };
+  Object.keys(room.players).forEach(u=>{
+    upd[`players/${u}/hp`]=START_HP;
+    ["lastG","lastE","lastD","lastA","lastM","mult"].forEach(k=>upd[`players/${u}/${k}`]=null);
+  });
+  try{ await update(G.roomRef,upd); }catch(e){ if(G) G.resetting=false; }
+}
+
+function netGuessPhase(room,me,foe){
+  const r=room.state.round;
+  if(G.shownRound!==r){
+    G.shownRound=r; G.submitted=false; G.phase="guess";
+    if(r===1) battleUIBase(me.nick,foe?foe.nick:"…");
+    battleRoundUI(r); setHP(me.hp,foe?foe.hp:START_HP); setMult(me.mult,foe?foe.mult:1);
+    showItem(MT[room.mts[r-1]]); if(r===1)toast(t("start_in")+" · "+modeLine(room.cats));
+    screen("game");
+  }
+  G.phase="guess";
+  const g0=G;
+  runTimer(room.state.deadline,()=>{
+    if(G!==g0) return;
+    if(!G.submitted) netSubmit(null,room);
+    if(G.hostActing) hostAdvance();
+  });
+  const gs=(room.guesses||{})["r"+r]||{};
+  if(G.hostActing && G.foeUid && gs[uid]!==undefined && gs[G.foeUid]!==undefined) hostAdvance();
+}
+async function netSubmit(guessKg,roomSnap){
+  if(!G||G.submitted)return; G.submitted=true;
+  $("guess").disabled=true;$("b-submit").disabled=true;
+  $("waitmsg").textContent=t("submit_done");
+  const room=roomSnap|| (await get(G.roomRef)).val(); if(!room||!G)return;
+  const v = guessKg==null ? -1 : guessKg;
+  await set(ref(db,`rooms/${G.roomId}/guesses/r${room.state.round}/${uid}`),v);
+}
+async function hostAdvance(){
+  if(!G||G.advancing)return; G.advancing=true;
+  const g0=G;
+  try{
+    const room=(await get(g0.roomRef)).val(); if(!room||room.state.phase!=="guess"){g0.advancing=false;return;}
+    const r=room.state.round, gs=(room.guesses||{})["r"+r]||{};
+    const uids=Object.keys(room.players).filter(u=>!room.players[u].left);
+    const allIn=uids.every(u=>gs[u]!==undefined);
+    if(!allIn && now()<room.state.deadline+600){g0.advancing=false;return;}
+    const actual=MT[room.mts[r-1]][2];
+    const sc={}; uids.forEach(u=>{ const g=gs[u]===undefined||gs[u]<0?null:gs[u]; sc[u]={g,e:errOf(g,actual)}; });
+    const upd={};
+    if(uids.length===2){
+      const [a,b]=uids, d=resolveRound(sc[a].e,sc[b].e,room.players[a].mult||1,room.players[b].mult||1);
+      upd[`players/${a}/hp`]=room.players[a].hp-d.a; upd[`players/${a}/lastD`]=d.a; upd[`players/${a}/lastA`]=d.b;
+      upd[`players/${b}/hp`]=room.players[b].hp-d.b; upd[`players/${b}/lastD`]=d.b; upd[`players/${b}/lastA`]=d.a;
+      upd[`players/${a}/lastM`]=d.usedA; upd[`players/${a}/mult`]=d.mA;
+      upd[`players/${b}/lastM`]=d.usedB; upd[`players/${b}/mult`]=d.mB;
+    }
+    uids.forEach(u=>{ upd[`players/${u}/lastG`]=sc[u].g===null?-1:sc[u].g; upd[`players/${u}/lastE`]=sc[u].e; });
+    upd["state/phase"]="reveal"; upd["state/until"]=now()+4500;
+    await update(g0.roomRef,upd);
+    setTimeout(async()=>{
+      try{
+        const cur=(await get(g0.roomRef)).val();
+        if(!cur||cur.state.phase!=="reveal"||cur.state.round!==r){g0.advancing=false;return;}
+        const hs=Object.values(cur.players).filter(p=>!p.left).map(p=>p.hp);
+        const dead=hs.some(h=>h<=0), last=r>=15;
+        if(dead||last) await update(ref(db,`rooms/${g0.roomId}/state`),{phase:"end"});
+        else await update(ref(db,`rooms/${g0.roomId}/state`),{phase:"guess",round:r+1,deadline:now()+15600});
+      }catch(e){}
+      g0.advancing=false;
+    },4600);
+  }catch(e){g0.advancing=false;}
+}
+function netRevealPhase(room,me,foe){
+  if(G.phase==="reveal"||!foe)return; G.phase="reveal";
+  cancelAnimationFrame(timerRAF);
+  const actual=MT[room.mts[room.state.round-1]][2];
+  $("guessarea").style.display="none"; $("revealarea").style.display="block";
+  countUp($("altnum"),actual); setHP(me.hp,foe.hp);
+  $("cmparea").innerHTML =
+    cmpBattle(t("me"),me.lastG,actual,me.lastD||0,me.lastA||0,me.lastM) +
+    cmpBattle(foe.nick,foe.lastG,actual,foe.lastD||0,foe.lastA||0,foe.lastM);
+  setMult(me.mult,foe.mult); showSrcLink();
+  $("nextmsg").textContent=multNote(me.mult,foe.mult);
+  sndReveal((me.lastE||0)<=(foe.lastE||0));
+  const g0=G;
+  setTimeout(()=>{ if(G===g0&&G.phase==="reveal") G.phase="idle"; },4300);
+}
+
+/* ================= 공유 ================= */
+function share(text){
+  if(navigator.share){ navigator.share({text}).catch(()=>{}); }
+  else navigator.clipboard.writeText(text).then(()=>toast(t("copied")));
+}
+
+/* ================= 배경 (떠다니는 금빛 먼지) ================= */
+(function(){
+  const c=$("dust"),x=c.getContext("2d");
+  function draw(){
+    c.width=innerWidth;c.height=innerHeight;x.clearRect(0,0,c.width,c.height);x.fillStyle="rgba(247,199,102,.75)";
+    for(let i=0;i<70;i++){const r=Math.random();x.globalAlpha=.08+r*.35;
+      x.beginPath();x.arc(Math.random()*c.width,Math.random()*c.height*.75,r*1.4,0,7);x.fill();}
+  }
+  draw(); addEventListener("resize",draw);
+})();
+
+/* ================= 바인딩 ================= */
+$("b-daily").onclick=()=>startSolo("daily");
+$("b-practice").onclick=()=>startSolo("practice");
+$("b-battle").onclick=async()=>{ if(await ensureNick(true)) screen("battle"); };
+$("b-settings").onclick=()=>{ showMyCode(); screen("settings"); };
+$("nick").addEventListener("input",nickStatus);
+$("b-recover").onclick=recoverNick;
+$("recode").addEventListener("input",e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,"");});
+$("b-copyrc").onclick=()=>{ const c=$("codeval").textContent.replace("-",""); if(c.length===8) navigator.clipboard.writeText(c).then(()=>toast(t("copied"))); };
+$("b-quick").onclick=()=>quickMatch();
+$("b-create").onclick=()=>{ renderRoomSetup(); screen("room"); };
+$("b-makeroom").onclick=createFriendRoom;
+$("b-join").onclick=joinRoom;
+$("b-cancelwait").onclick=()=>{cleanupGame();screen("battle");};
+$("b-quitgame").onclick=()=>{
+  if(G&&G.mode==="daily"){
+    // 답을 내기 전에 나가면 이번 라운드는 0점, 나머지는 나중에 이어서
+    if(!G.locked){ G.pts.push(0); G.round++; }
+    else G.round++;
+    if(G.round>5){ finishDaily(); return; }
+    saveDailyProg(false); toast(t("daily_saved")); cleanupGame(); screen("home"); return;
+  }
+  if(G&&G.mode==="practice"&&G.pts.length){
+    const avg=Math.round(G.pts.reduce((a,b)=>a+b,0)/G.pts.length);
+    toast(t("practice_end")+" · "+t("rounds_played")+" "+G.pts.length+" · "+t("avg_pts")+" "+avg);
+  }
+  cleanupGame();screen("home");
+};
+$("b-submit").onclick=()=>submitGuess();
+$("guess").addEventListener("keydown",e=>{if(e.key==="Enter")submitGuess();});
+/* 숫자 입력: 숫자와 소수점 하나만 (쉼표는 무시), 최대 12자 */
+$("guess").addEventListener("input",e=>{
+  let v=e.target.value.replace(/,/g,".").replace(/[^\d.]/g,"");
+  const i=v.indexOf("."); if(i>=0) v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,"");
+  e.target.value=v.slice(0,12);
+});
+function submitGuess(){
+  const v=$("guess").value.trim();
+  let kg=null;
+  if(v!==""){
+    const n=parseFloat(v);
+    if(isNaN(n)||n<=0){ toast(t("bad_num")); return; }
+    kg=n*unitFactor(inUnit);
+  }
+  if(!G)return;
+  if(G.mode==="daily"||G.mode==="practice")soloSubmit(kg);
+  else if(G.mode==="bot")botSubmit(kg);
+  else if(G.mode==="net")netSubmit(kg);
+}
+$("langsel").onchange=e=>{L=e.target.value;localStorage.setItem("wl_lang",L);applyI18n();};
+function setUnitSys(s){ usys=s; localStorage.setItem("wl_usys",s); inUnit=localStorage.getItem("wl_inunit_"+s)||(s==="metric"?"kg":"lb"); applyI18n(); }
+$("u-metric").onclick=()=>setUnitSys("metric");
+$("u-imperial").onclick=()=>setUnitSys("imperial");
+$("snd-on").onclick=()=>{sound=true;localStorage.setItem("wl_sound","1");applyI18n();beep([659]);};
+$("snd-off").onclick=()=>{sound=false;localStorage.setItem("wl_sound","0");applyI18n();};
+$("joincode").addEventListener("input",e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"");});
+
+applyI18n();
+/* 시작 시: 이 기기가 가진 닉네임이 아직 내 것인지 확인 → 기록 불러오기 */
+authReady.then(async()=>{
+  if(myNickKey){
+    try{ const o=await get(ref(db,`nicknames/${myNickKey}/owner`)); if(o.val()!==AUID){ myNickKey=null; localStorage.removeItem("wl_nickkey"); } else verifiedKey=myNickKey; }catch(e){}
+  }
+  loadStats(); if(nickname()) nickStatus();
+});
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
