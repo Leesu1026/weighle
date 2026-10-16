@@ -132,7 +132,8 @@ input:focus{border-color:var(--glow)}
 .cmpval{font-size:19px;font-weight:900;margin-top:2px;font-variant-numeric:tabular-nums;word-break:break-all}
 .cmpdmg{font-size:14px;font-weight:900;margin-top:2px;color:var(--bad);word-break:break-all}
 .cmpdmg.pts{color:var(--ok)}
-.cmppts{font-size:14px;font-weight:900;color:var(--ok);margin-top:3px;word-break:break-all}
+.cmppts{font-size:13.5px;font-weight:900;color:var(--ok);margin-top:3px;word-break:keep-all;overflow-wrap:anywhere}
+.cmpscore{font-size:16px;font-weight:900;color:var(--glow2);margin-top:2px}
 .rematchmsg{text-align:center;color:var(--glow2);font-size:14px;font-weight:700;min-height:20px;margin-top:6px}
 
 /* 결과 */
@@ -156,6 +157,9 @@ select option{color:#000}
 .toast.on{opacity:1}
 .pill{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:12px;color:var(--dim);margin:2px}
 .roommode{text-align:center;color:var(--ice);font-size:13px;margin-top:6px;line-height:1.5}
+.lobrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line);font-size:16px;font-weight:700}
+.lobrow:last-child{border-bottom:none}
+.lobst{font-size:14px;color:var(--dim);white-space:nowrap}.lobst.ok{color:var(--ok)}
 
 /* 선택전 카테고리 */
 .cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -255,10 +259,15 @@ select option{color:#000}
 <!-- 매칭/대기 -->
 <section id="s-wait">
   <div class="top"><button class="back" id="b-cancelwait">←</button><div class="h1" id="waittitle"></div></div>
-  <div class="spin"></div>
+  <div class="spin" id="waitspin"></div>
   <div class="center" id="waitdesc" style="color:var(--dim);font-size:14px"></div>
   <div class="codebox" id="roomcodebox" style="display:none"></div>
   <div class="roommode" id="roommode"></div>
+  <div class="card" id="lobby" style="display:none">
+    <div class="lobrow"><span id="lb-me"></span><span class="lobst" id="lb-mest"></span></div>
+    <div class="lobrow"><span id="lb-foe"></span><span class="lobst" id="lb-foest"></span></div>
+  </div>
+  <button class="btn" id="b-ready" style="display:none"></button>
   <button class="btn ghost" id="b-copycode" style="display:none"></button>
 </section>
 
@@ -417,7 +426,7 @@ const STR = {
 ko:{
  tag:"세상 모든 것의 무게를 맞혀라", nick:"닉네임 (2~12자)", daily:"📅 데일리 챌린지", battle:"⚔️ 1대1 대결",
  practice:"🎯 연습 모드", settings:"⚙️ 설정", quick:"⚡ 빠른 매칭", create:"🏠 방 만들기 (친구전)", join:"입장",
- join_lbl:"코드로 입장", battle_note:"체력 1,000으로 시작. 매 라운드 더 가깝게 맞힌 쪽이 '두 사람 오차의 차이(kg) × 내 배수'만큼 상대 체력을 깎아요. 예: 내 오차 20kg, 상대 오차 70kg → 상대 -50. 둘 다 ×1로 시작하고, 라운드를 이길 때마다 내 배수가 +0.5씩 올라가요. 최대 15라운드. 빠른 매칭은 일반전(전체 카테고리)이고, 친구전은 카테고리를 고르는 선택전도 할 수 있어요.",
+ join_lbl:"코드로 입장", battle_note:"체력 10,000으로 시작. 매 라운드 각자 0~5,000점을 받고, 점수가 높은 쪽이 '두 사람 점수 차이 × 내 배수'만큼 상대 체력을 깎아요. 예: 나 4,300점, 상대 2,400점 → 상대 -1,900. 둘 다 ×1로 시작하고, 라운드를 이길 때마다 내 배수가 +0.5씩 올라가요. 최대 15라운드. 친구전은 두 사람 모두 '준비'를 누르면 시작하고, 카테고리를 고르는 선택전도 할 수 있어요.",
  nick_chars:"닉네임은 글자·숫자·공백·_·- 만 쓸 수 있어요", nick_taken:"이미 사용 중인 닉네임이에요", nick_free:"사용할 수 있는 닉네임", nick_mine:"내 닉네임",
  recover_q:"내 닉네임인가요?", recover_btn:"복구", recover_ok:"닉네임을 가져왔어요!", recover_bad:"복구 코드가 맞지 않아요", recover_ph:"복구 코드",
  offline:"서버에 연결할 수 없어요. 인터넷을 확인해 주세요", code_title:"내 복구 코드", copy_code2:"복구 코드 복사",
@@ -445,12 +454,13 @@ ko:{
  need_cat:"카테고리를 하나 이상 골라주세요", need_more:"고른 카테고리의 문제를 합쳐 15개 이상이어야 해요",
  cat_sum:(n,q)=>`${n}개 카테고리 · 문제 ${q}개`, mode_line_normal:"일반전 · 전체 카테고리", mode_line_select:"선택전 · ",
  more:n=>` 외 ${n}개`, bad_num:"숫자를 입력해 주세요",
+ ready:"✋ 준비", unready:"준비 취소", ready_on:"✅ 준비 완료", ready_off:"⏳ 준비 전", lobby_title:"두 사람 모두 준비하면 시작해요", empty_seat:"빈 자리", lobby_wait_foe:"친구가 들어오면 함께 준비를 눌러요",
 },
 en:{
  tag:"Guess the weight of everything. Battle everyone.", nick:"Nickname (2–12 chars)", daily:"📅 Daily Challenge",
  battle:"⚔️ 1v1 Battle", practice:"🎯 Practice", settings:"⚙️ Settings", quick:"⚡ Quick Match",
  create:"🏠 Create Room (friends)", join:"Join", join_lbl:"Join with code",
- battle_note:"Start with 1,000 HP. Each round, the closer guess deals (difference between both errors in kg) × their multiplier. E.g. your error 20 kg, theirs 70 kg → they lose 50. Both start at ×1; every round you win adds +0.5 to your multiplier. Max 15 rounds. Quick Match uses all categories; friend rooms can pick categories.",
+ battle_note:"Start with 10,000 HP. Each round both players score 0–5,000; the higher score deals (score difference) × their multiplier. E.g. you 4,300, them 2,400 → they lose 1,900. Both start at ×1; every round you win adds +0.5 to your multiplier. Max 15 rounds. Friend rooms start when both players press Ready, and can pick categories.",
  nick_chars:"Use letters, numbers, spaces, _ or - only", nick_taken:"That nickname is taken", nick_free:"Nickname available", nick_mine:"Your nickname",
  recover_q:"Is it yours?", recover_btn:"Restore", recover_ok:"Nickname restored!", recover_bad:"Wrong recovery code", recover_ph:"Recovery code",
  offline:"Can't reach the server. Check your connection", code_title:"My recovery code", copy_code2:"Copy recovery code",
@@ -478,6 +488,7 @@ en:{
  need_cat:"Pick at least one category", need_more:"Your categories need at least 15 items in total",
  cat_sum:(n,q)=>`${n} categories · ${q} items`, mode_line_normal:"Standard · all categories", mode_line_select:"Categories · ",
  more:n=>` +${n} more`, bad_num:"Please enter a number",
+ ready:"✋ Ready", unready:"Cancel ready", ready_on:"✅ Ready", ready_off:"⏳ Not ready", lobby_title:"Starts when both players are ready", empty_seat:"Empty seat", lobby_wait_foe:"When your friend joins, both press Ready",
 }};
 let L = localStorage.getItem("wl_lang") || "ko";
 const t = k => STR[L][k];
@@ -662,7 +673,7 @@ function renderUnitSeg(){
 /* ===== 점수 (Peakle과 동일) =====
    라운드 점수 0~5000. 오직 "실제 무게와 얼마나 차이 나는가"로만 계산.
    오차 2% 이내 만점, 10%≈4,300점, 30%≈3,200점, 50%≈2,400점 */
-const MAXPTS=5000, START_HP=1000, APP_VER=1;
+const MAXPTS=5000, START_HP=10000, APP_VER=2;
 function calcScore(guessKg, actualKg){
   if(guessKg==null||guessKg<=0) return 0;
   const r=Math.abs(guessKg-actualKg)/actualKg;   // 실제 무게 대비 차이의 비율
@@ -676,14 +687,16 @@ function calcScore(guessKg, actualKg){
    - 비긴 라운드: 둘 다 그대로 */
 const MULT_STEP=0.5, LOSE_RESET=false;
 const nextMult=(m,won,lost)=> won ? m+MULT_STEP : (lost&&LOSE_RESET ? 1 : m);
-/* ===== 대결 데미지 (Peakle과 동일) =====
-   각자의 오차(kg) = |추측 - 실제|. 시간 초과는 0kg을 적은 것으로 처리(오차 = 실제 무게).
-   오차가 작은 쪽이 이기고, 두 사람 오차의 차이(kg) × 이긴 쪽 배수 만큼 진 쪽 체력이 깎임. (단위가 lb여도 계산은 kg) */
-const errOf = (g,act) => (g==null||g<0) ? act : Math.abs(g-act);
-function resolveRound(eA,eB,mA,mB){
-  const diff=Math.abs(eA-eB);
-  if(eA<eB) return {a:0,b:Math.round(diff*mA),mA:nextMult(mA,true,false),mB:nextMult(mB,false,true),usedA:mA,usedB:mB};
-  if(eB<eA) return {a:Math.round(diff*mB),b:0,mA:nextMult(mA,false,true),mB:nextMult(mB,true,false),usedA:mA,usedB:mB};
+/* ===== 대결 데미지 (Weighle v2) =====
+   각자의 라운드 점수(0~5000)를 계산하고, 점수가 높은 쪽이 이김.
+   진 쪽 체력 -= (두 사람 점수 차이) × 이긴 쪽 배수. 체력 10,000.
+   → 물건이 가볍든 무겁든(동전이든 항공모함이든) 데미지 크기가 같은 기준이라 한 방에 끝나지 않음.
+   시간 초과 = 0점. (예전 방식: 오차 kg 차이 → 무거운 문제 한 번에 게임이 끝나는 문제가 있었음) */
+const roundScore = (g,act) => (g==null||g<0) ? 0 : calcScore(g,act);
+function resolveRound(sA,sB,mA,mB){
+  const diff=Math.abs(sA-sB);
+  if(sA>sB) return {a:0,b:Math.round(diff*mA),mA:nextMult(mA,true,false),mB:nextMult(mB,false,true),usedA:mA,usedB:mB};
+  if(sB>sA) return {a:Math.round(diff*mB),b:0,mA:nextMult(mA,false,true),mB:nextMult(mB,true,false),usedA:mA,usedB:mB};
   return {a:0,b:0,mA,mB,usedA:mA,usedB:mB};
 }
 
@@ -1030,10 +1043,11 @@ function multNote(me,foe){ return t("next_mult")+" "+t("me")+" "+fmtM(me||1)+" �
 function cmpBattle(who,guessKg,actual,taken,dealt,usedMult){
   const guessStr = guessKg==null||guessKg<0 ? "—" : fmtW(guessKg);
   const errStr = guessKg==null||guessKg<0 ? t("timeout") : errText(guessKg,actual);
+  const ptsStr = roundScore(guessKg,actual).toLocaleString()+t("pts");
   const line = dealt>0 ? `<div class="cmpdmg pts">⚔️ ${dealt.toLocaleString()} ${t("attack")} (${fmtM(usedMult||1)})</div>`
              : taken>0 ? `<div class="cmpdmg">-${taken.toLocaleString()} HP</div>`
              : `<div class="cmpdmg" style="color:var(--dim)">${t("tie")}</div>`;
-  return `<div class="cmpbox"><div class="cmpwho">${esc(who)}</div><div class="cmpval">${guessStr}</div><div class="cmppts" style="color:var(--ice)">${errStr}</div>${line}</div>`;
+  return `<div class="cmpbox"><div class="cmpwho">${esc(who)}</div><div class="cmpval">${guessStr}</div><div class="cmppts" style="color:var(--ice)">${errStr}</div><div class="cmpscore">${ptsStr}</div>${line}</div>`;
 }
 /* 방 모드 설명 한 줄 (일반전 / 선택전: 카테고리 목록) */
 function modeLine(cats){
@@ -1073,8 +1087,8 @@ function botReveal(){
   if(!G) return;
   cancelAnimationFrame(timerRAF);
   const m=MT[G.mts[G.round-1]],actual=m[2];
-  const eMe=errOf(G.myGuess,actual), eFoe=errOf(G.botGuess,actual);
-  const d=resolveRound(eMe,eFoe,G.myMult,G.foeMult);
+  const sMe=roundScore(G.myGuess,actual), sFoe=roundScore(G.botGuess,actual);
+  const d=resolveRound(sMe,sFoe,G.myMult,G.foeMult);
   G.myHP-=d.a; G.foeHP-=d.b; G.myMult=d.mA; G.foeMult=d.mB;
   $("guessarea").style.display="none"; $("revealarea").style.display="block";
   countUp($("altnum"),actual); setHP(G.myHP,G.foeHP);
@@ -1082,7 +1096,7 @@ function botReveal(){
     cmpBattle(t("me"),G.myGuess,actual,d.a,d.b,d.usedA) +
     cmpBattle(G.foeNick,G.botGuess,actual,d.b,d.a,d.usedB);
   setMult(G.myMult,G.foeMult); showSrcLink();
-  sndReveal(eMe<=eFoe);
+  sndReveal(sMe>=sFoe);
   const dead=G.myHP<=0||G.foeHP<=0, last=G.round>=15;
   $("nextmsg").textContent = dead||last ? "" : multNote(G.myMult,G.foeMult);
   revealTimer=setTimeout(()=>{
@@ -1153,6 +1167,7 @@ async function quickMatch(startTs){
   cleanupGame();
   $("waittitle").textContent=t("matching"); $("waitdesc").textContent=t("matching_desc");
   $("roomcodebox").style.display="none"; $("b-copycode").style.display="none"; $("roommode").textContent="";
+  $("lobby").style.display="none"; $("b-ready").style.display="none"; $("waitspin").style.display="block";
   screen("wait");
   const me={mode:"net",fb:true,phase:"matching",matching:true,startTs};
   G=me;
@@ -1265,6 +1280,7 @@ async function createFriendRoom(){
   $("waittitle").textContent=t("room_wait"); $("waitdesc").textContent=t("room_desc");
   $("roomcodebox").style.display="block"; $("roomcodebox").textContent=roomId;
   $("roommode").textContent=modeLine(cats);
+  $("lobby").style.display="none"; $("b-ready").style.display="none"; $("waitspin").style.display="block";
   $("b-copycode").style.display="block";
   $("b-copycode").onclick=()=>{navigator.clipboard.writeText(roomId).then(()=>toast(t("copied")));};
   screen("wait");
@@ -1281,9 +1297,32 @@ async function joinRoom(){
   if(active.length>=2){toast(t("room_full"));return;}
   if(room.ver!==ROOMVER()){toast(t("version_err"));return;}
   cleanupGame();
+  $("b-copycode").onclick=null;
   await update(ref(db,`rooms/${roomId}`),{[`members/${AUID}`]:true,[`players/${uid}`]:{nick:n,hp:START_HP}});
   onDisconnect(ref(db,`rooms/${roomId}/players/${uid}/left`)).set(true);
+  $("waittitle").textContent=t("lobby_title"); $("waitdesc").textContent="";
+  $("roomcodebox").style.display="block"; $("roomcodebox").textContent=roomId;
+  $("roommode").textContent=modeLine(room.cats||null);
+  $("b-copycode").style.display="none";
+  screen("wait");
   enterRoom(roomId,false,{});
+}
+
+/* ---------- 친구전 대기실: 두 사람 모두 '준비'를 누르면 시작 ---------- */
+function renderLobby(roomId,me,foe){
+  $("lobby").style.display="block"; $("b-ready").style.display="block";
+  $("waitspin").style.display=foe?"none":"block";
+  $("waittitle").textContent=foe?t("lobby_title"):t("room_wait");
+  $("waitdesc").textContent=foe?"":t("room_desc")+" · "+t("lobby_wait_foe");
+  $("b-copycode").style.display=foe?"none":($("b-copycode").onclick?"block":"none");
+  $("lb-me").textContent="👤 "+(me.nick||t("me"))+" ("+t("me")+")";
+  $("lb-mest").textContent=me.ready?t("ready_on"):t("ready_off"); $("lb-mest").className="lobst"+(me.ready?" ok":"");
+  $("lb-foe").textContent=foe?"👤 "+(foe.nick||t("foe")):"— "+t("empty_seat");
+  $("lb-foest").textContent=foe?(foe.ready?t("ready_on"):t("ready_off")):""; $("lb-foest").className="lobst"+(foe&&foe.ready?" ok":"");
+  const b=$("b-ready");
+  b.textContent=me.ready?t("unready"):t("ready");
+  b.className=me.ready?"btn ghost":"btn";
+  b.onclick=()=>{ update(ref(db,`rooms/${roomId}/players/${uid}`),{ready:!me.ready}).catch(()=>{}); };
 }
 
 /* ---------- 방 진행 (로비 → 라운드 → 결과 → 재대결) ---------- */
@@ -1309,7 +1348,7 @@ function enterRoom(roomId,iAmHost,opts){
     const room=snap.val();
     if(room.mts&&me0.preloadedFor!==room.game){ me0.preloadedFor=room.game; preloadPhotos(room.mts.map(i=>MT[i])); }
     const players=room.players||{};
-    const foeUid=Object.keys(players).find(k=>k!==uid);
+    const foeUid=Object.keys(players).find(k=>k!==uid&&!players[k].left)||Object.keys(players).find(k=>k!==uid);
     const me=players[uid], foe=foeUid?players[foeUid]:null;
     if(!me) return;
     me0.foeUid=foeUid; me0.foeLeft=!!(foe&&foe.left);
@@ -1342,7 +1381,10 @@ function enterRoom(roomId,iAmHost,opts){
     if(room.host===uid) me0.hostActing=true;
 
     if(room.state.phase==="lobby"){
-      if(foe && !foe.left && me0.hostActing && !me0.startSent){
+      const foeHere = foe && !foe.left;
+      if(!room.quick) renderLobby(roomId,me,foeHere?foe:null);
+      const go = foeHere && (room.quick || (me.ready && foe.ready));   // 친구전: 두 사람 모두 '준비'
+      if(go && me0.hostActing && !me0.startSent){
         me0.startSent=true; clearTimeout(me0.joinTimer);
         update(ref(db,`rooms/${roomId}/state`),{phase:"guess",round:1,deadline:now()+16000});
       }
@@ -1367,7 +1409,7 @@ async function hostRematch(room){
   };
   Object.keys(room.players).forEach(u=>{
     upd[`players/${u}/hp`]=START_HP;
-    ["lastG","lastE","lastD","lastA","lastM","mult"].forEach(k=>upd[`players/${u}/${k}`]=null);
+    ["lastG","lastS","lastD","lastA","lastM","mult","ready"].forEach(k=>upd[`players/${u}/${k}`]=null);
   });
   try{ await update(G.roomRef,upd); }catch(e){ if(G) G.resetting=false; }
 }
@@ -1409,16 +1451,16 @@ async function hostAdvance(){
     const allIn=uids.every(u=>gs[u]!==undefined);
     if(!allIn && now()<room.state.deadline+600){g0.advancing=false;return;}
     const actual=MT[room.mts[r-1]][2];
-    const sc={}; uids.forEach(u=>{ const g=gs[u]===undefined||gs[u]<0?null:gs[u]; sc[u]={g,e:errOf(g,actual)}; });
+    const sc={}; uids.forEach(u=>{ const g=gs[u]===undefined||gs[u]<0?null:gs[u]; sc[u]={g,s:roundScore(g,actual)}; });
     const upd={};
     if(uids.length===2){
-      const [a,b]=uids, d=resolveRound(sc[a].e,sc[b].e,room.players[a].mult||1,room.players[b].mult||1);
+      const [a,b]=uids, d=resolveRound(sc[a].s,sc[b].s,room.players[a].mult||1,room.players[b].mult||1);
       upd[`players/${a}/hp`]=room.players[a].hp-d.a; upd[`players/${a}/lastD`]=d.a; upd[`players/${a}/lastA`]=d.b;
       upd[`players/${b}/hp`]=room.players[b].hp-d.b; upd[`players/${b}/lastD`]=d.b; upd[`players/${b}/lastA`]=d.a;
       upd[`players/${a}/lastM`]=d.usedA; upd[`players/${a}/mult`]=d.mA;
       upd[`players/${b}/lastM`]=d.usedB; upd[`players/${b}/mult`]=d.mB;
     }
-    uids.forEach(u=>{ upd[`players/${u}/lastG`]=sc[u].g===null?-1:sc[u].g; upd[`players/${u}/lastE`]=sc[u].e; });
+    uids.forEach(u=>{ upd[`players/${u}/lastG`]=sc[u].g===null?-1:sc[u].g; upd[`players/${u}/lastS`]=sc[u].s; });
     upd["state/phase"]="reveal"; upd["state/until"]=now()+4500;
     await update(g0.roomRef,upd);
     setTimeout(async()=>{
@@ -1445,7 +1487,7 @@ function netRevealPhase(room,me,foe){
     cmpBattle(foe.nick,foe.lastG,actual,foe.lastD||0,foe.lastA||0,foe.lastM);
   setMult(me.mult,foe.mult); showSrcLink();
   $("nextmsg").textContent=multNote(me.mult,foe.mult);
-  sndReveal((me.lastE||0)<=(foe.lastE||0));
+  sndReveal((me.lastS||0)>=(foe.lastS||0));
   const g0=G;
   setTimeout(()=>{ if(G===g0&&G.phase==="reveal") G.phase="idle"; },4300);
 }
