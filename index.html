@@ -29,7 +29,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
-  font-family:'Outfit',-apple-system,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+  font-family:'Outfit',-apple-system,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif;
   background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 62%,#3B2F22 100%);
   color:var(--snow); min-height:100dvh; overflow-x:hidden;
 }
@@ -352,11 +352,11 @@ select option{color:#000}
       <select id="langsel">
         <option value="ko">한국어</option>
         <option value="en">English</option>
-        <option value="" disabled>中文 (준비 중)</option>
-        <option value="" disabled>日本語 (준비 중)</option>
-        <option value="" disabled>Español (준비 중)</option>
-        <option value="" disabled>Français (준비 중)</option>
-        <option value="" disabled>हिन्दी (준비 중)</option>
+        <option value="es">Español</option>
+        <option value="pt">Português (Brasil)</option>
+        <option value="ja">日本語</option>
+        <option value="de">Deutsch</option>
+        <option value="fr">Français</option>
       </select>
     </div>
     <div class="setrow"><span data-i="unit"></span>
@@ -440,11 +440,11 @@ ko:{
  opp_left:"상대가 나갔어요. 부전승!", share:"결과 공유하기", home:"홈으로", quit:"나가기",
  daily_title:"데일리 챌린지", daily_max:"/ 25,000점", daily_next:"내일 자정(UTC)에 새 문제가 나와요!",
  daily_done:"오늘 챌린지를 이미 완료했어요", lang:"언어", unit:"무게 단위", sound:"효과음", on:"켜기", off:"끄기",
- settings_note:"언어를 바꾸면 문제 이름도 해당 언어 표기로 나와요. 무게 단위를 바꾸면 답 표시와 입력 단위가 함께 바뀌어요.",
+ settings_note:"한국어가 아닌 언어에서는 문제 이름이 영어로 나와요. 무게 단위를 바꾸면 답 표시와 입력 단위가 함께 바뀌어요.",
  nick_short:"닉네임은 2자 이상이어야 해요", nick_bad:"사용할 수 없는 닉네임이에요", no_room:"방을 찾을 수 없어요",
  room_full:"방이 가득 찼어요", practice_end:"연습 종료", rounds_played:"라운드 진행", avg_pts:"평균 점수",
  mts:"개의 무게 문제", cats_n:"개 카테고리", err:"오차", guess_ph:"무게", next_in:"곧 다음 라운드…", start_in:"게임 시작!",
- share_daily:(n,s,e)=>`Weighle 데일리 #${n}\n⚖️ ${s.toLocaleString()} / 25,000점\n${e}\n`,
+ share_daily:(n,s,e)=>`Weighle 데일리 #${n}\n⚖️ ${N(s)} / ${N(25000)}점\n${e}\n`,
  share_battle:(w,me,foe)=>`Weighle ⚔️ 1대1 배틀 ${w}\n${me} vs ${foe}\n`,
  version_err:"상대와 게임 버전이 달라요. 새로고침 해주세요!",
  room_title:"친구전 방 만들기", mode_normal:"일반전", mode_select:"선택전",
@@ -469,16 +469,16 @@ en:{
  matching:"Finding an opponent…", matching_desc:"If no one joins in 30s, you'll face a practice bot",
  room_wait:"Waiting for your friend…", room_desc:"Share this code with a friend", copy_code:"Copy code", copied:"Copied!",
  round:"Round", answer:"Actual weight", me:"You", bot_prefix:"", submit_done:"Submitted! Waiting for opponent…",
- timeout:"Time's up!", damage:"damage", pts:"pts", win:"Victory!", lose:"Defeat…", draw:"Draw",
+ timeout:"Time's up!", damage:"damage", pts:" pts", win:"Victory!", lose:"Defeat…", draw:"Draw",
  win_sub:"Sharper than a scale!", lose_sub:"Weigh in harder next time.", draw_sub:"Perfectly balanced!",
  opp_left:"Opponent left. You win!", share:"Share result", home:"Home", quit:"Quit",
  daily_title:"Daily Challenge", daily_max:"/ 25,000 pts", daily_next:"New puzzle at midnight UTC!",
  daily_done:"You already finished today's challenge", lang:"Language", unit:"Weight unit", sound:"Sound", on:"On", off:"Off",
- settings_note:"Changing language also changes item names where a translation exists. Changing units changes both answers and your input units.",
+ settings_note:"Item names are shown in English. Changing units changes both answers and your input units.",
  nick_short:"Nickname must be at least 2 characters", nick_bad:"That nickname isn't allowed", no_room:"Room not found",
  room_full:"Room is full", practice_end:"Practice over", rounds_played:"Rounds played", avg_pts:"Avg points",
  mts:"things to weigh", cats_n:"categories", err:"error", guess_ph:"Weight", next_in:"Next round soon…", start_in:"Game start!",
- share_daily:(n,s,e)=>`Weighle Daily #${n}\n⚖️ ${s.toLocaleString()} / 25,000 pts\n${e}\n`,
+ share_daily:(n,s,e)=>`Weighle Daily #${n}\n⚖️ ${N(s)} / ${N(25000)} pts\n${e}\n`,
  share_battle:(w,me,foe)=>`Weighle ⚔️ 1v1 Battle — ${w}\n${me} vs ${foe}\n`,
  version_err:"Game version mismatch with opponent. Please refresh!",
  room_title:"Create a friend room", mode_normal:"Standard", mode_select:"Pick categories",
@@ -489,16 +489,199 @@ en:{
  cat_sum:(n,q)=>`${n} categories · ${q} items`, mode_line_normal:"Standard · all categories", mode_line_select:"Categories · ",
  more:n=>` +${n} more`, bad_num:"Please enter a number",
  ready:"✋ Ready", unready:"Cancel ready", ready_on:"✅ Ready", ready_off:"⏳ Not ready", lobby_title:"Starts when both players are ready", empty_seat:"Empty seat", lobby_wait_foe:"When your friend joins, both press Ready",
-}};
-let L = localStorage.getItem("wl_lang") || "ko";
-const t = k => STR[L][k];
+},
+es:{
+ tag:"Adivina el peso de todo. Reta a todo el mundo.", nick:"Apodo (2–12 caracteres)", daily:"📅 Desafío diario",
+ battle:"⚔️ Duelo 1 vs 1", practice:"🎯 Práctica", settings:"⚙️ Ajustes", quick:"⚡ Partida rápida",
+ create:"🏠 Crear sala (amigos)", join:"Entrar", join_lbl:"Entrar con código",
+ battle_note:"Empezáis con 10.000 de vida. En cada ronda los dos jugadores sacan de 0 a 5000 puntos; quien saca más resta al rival (diferencia de puntos) × su multiplicador. Ej.: tú 4300, rival 2400 → el rival pierde 1900. Ambos empiezan en ×1 y cada ronda que ganas suma +0,5 a tu multiplicador. Máximo 15 rondas. Las salas de amigos empiezan cuando los dos pulsan Listo y permiten elegir categorías.",
+ nick_chars:"Usa solo letras, números, espacios, _ o -", nick_taken:"Ese apodo ya está en uso", nick_free:"Apodo disponible", nick_mine:"Tu apodo",
+ recover_q:"¿Es tuyo?", recover_btn:"Recuperar", recover_ok:"¡Apodo recuperado!", recover_bad:"Código de recuperación incorrecto", recover_ph:"Código de recuperación",
+ offline:"No se puede conectar con el servidor. Revisa tu conexión", code_title:"Mi código de recuperación", copy_code2:"Copiar código de recuperación",
+ code_note:"Necesitas este código para usar este apodo (y su historial) en otro dispositivo o navegador. No lo compartas.",
+ w:"V", l:"D", d:"E", daily_best:"Mejor diario", photo_src:"Fuente de la foto (Wikimedia Commons)", daily_saved:"Progreso guardado. Puedes continuar más tarde", rematch:"🔄 Revancha", rematch_bot:"🔄 Jugar otra vez", rematch_wait:"Esperando al rival…", rematch_req:"¡Tu rival quiere la revancha! Pulsa para empezar", opp_gone:"El rival se ha ido", attack:"de ataque", tie:"Ronda empatada", photo_loading:"Cargando foto…", next_mult:"Multiplicadores de la próxima ronda —", foe:"Rival", join_fail:"El rival se desconectó. Buscando otro…",
+ matching:"Buscando rival…", matching_desc:"Si nadie entra en 30 s, jugarás contra un bot de práctica",
+ room_wait:"Esperando a tu amigo…", room_desc:"Comparte este código con un amigo", copy_code:"Copiar código", copied:"¡Copiado!",
+ round:"Ronda", answer:"Peso real", me:"Tú", bot_prefix:"", submit_done:"¡Enviado! Esperando al rival…",
+ timeout:"¡Se acabó el tiempo!", damage:"daño", pts:" pts", win:"¡Victoria!", lose:"Derrota…", draw:"Empate",
+ win_sub:"¡Más preciso que una báscula!", lose_sub:"La próxima vez, con más peso.", draw_sub:"¡Equilibrio perfecto!",
+ opp_left:"El rival se fue. ¡Ganas!", share:"Compartir resultado", home:"Inicio", quit:"Salir",
+ daily_title:"Desafío diario", daily_max:"/ 25.000 pts", daily_next:"¡Nuevo reto a medianoche (UTC)!",
+ daily_done:"Ya completaste el desafío de hoy", lang:"Idioma", unit:"Unidad de peso", sound:"Sonido", on:"Sí", off:"No",
+ settings_note:"Los nombres de los objetos se muestran en inglés. Al cambiar la unidad cambian tanto las respuestas como la unidad para escribir.",
+ nick_short:"El apodo debe tener al menos 2 caracteres", nick_bad:"Ese apodo no está permitido", no_room:"No se encontró la sala",
+ room_full:"La sala está llena", practice_end:"Práctica terminada", rounds_played:"Rondas jugadas", avg_pts:"Media",
+ mts:"cosas para pesar", cats_n:"categorías", err:"error", guess_ph:"Peso", next_in:"Siguiente ronda en breve…", start_in:"¡Empieza la partida!",
+ share_daily:(n,s,e)=>`Weighle diario #${n}\n⚖️ ${N(s)} / ${N(25000)} pts\n${e}\n`,
+ share_battle:(w,me,foe)=>`Weighle ⚔️ Duelo 1 vs 1 — ${w}\n${me} vs ${foe}\n`,
+ version_err:"Tu versión del juego no coincide con la del rival. ¡Recarga la página!",
+ room_title:"Crear sala de amigos", mode_normal:"Normal", mode_select:"Elegir categorías",
+ mode_normal_desc:"Cada ronda sale al azar de todas las categorías.",
+ mode_select_desc:"Las rondas solo salen de las categorías que elijas. Puedes elegir varias.",
+ all:"Seleccionar todo", none:"Quitar todo", make_room:"Crear sala",
+ need_cat:"Elige al menos una categoría", need_more:"Las categorías elegidas deben sumar al menos 15 objetos",
+ cat_sum:(n,q)=>`${n} categorías · ${q} objetos`, mode_line_normal:"Normal · todas las categorías", mode_line_select:"Categorías · ",
+ more:n=>` y ${n} más`, bad_num:"Escribe un número",
+ ready:"✋ Listo", unready:"Cancelar", ready_on:"✅ Listo", ready_off:"⏳ No listo", lobby_title:"Empieza cuando los dos estéis listos", empty_seat:"Asiento libre", lobby_wait_foe:"Cuando entre tu amigo, pulsad los dos Listo",
+},
+pt:{
+ tag:"Adivinhe o peso de tudo. Desafie todo mundo.", nick:"Apelido (2–12 caracteres)", daily:"📅 Desafio diário",
+ battle:"⚔️ Duelo 1 contra 1", practice:"🎯 Treino", settings:"⚙️ Configurações", quick:"⚡ Partida rápida",
+ create:"🏠 Criar sala (amigos)", join:"Entrar", join_lbl:"Entrar com código",
+ battle_note:"Vocês começam com 10.000 de vida. A cada rodada, os dois jogadores fazem de 0 a 5.000 pontos; quem fizer mais tira do adversário (diferença de pontos) × seu multiplicador. Ex.: você 4.300, adversário 2.400 → ele perde 1.900. Os dois começam em ×1 e cada rodada vencida soma +0,5 ao seu multiplicador. Máximo de 15 rodadas. Salas de amigos começam quando os dois tocam em Pronto e permitem escolher categorias.",
+ nick_chars:"Use só letras, números, espaços, _ ou -", nick_taken:"Esse apelido já está em uso", nick_free:"Apelido disponível", nick_mine:"Seu apelido",
+ recover_q:"É seu?", recover_btn:"Recuperar", recover_ok:"Apelido recuperado!", recover_bad:"Código de recuperação incorreto", recover_ph:"Código de recuperação",
+ offline:"Não foi possível conectar ao servidor. Verifique sua conexão", code_title:"Meu código de recuperação", copy_code2:"Copiar código de recuperação",
+ code_note:"Você precisa deste código para usar este apelido (e seu histórico) em outro aparelho ou navegador. Não compartilhe.",
+ w:"V", l:"D", d:"E", daily_best:"Melhor diário", photo_src:"Fonte da foto (Wikimedia Commons)", daily_saved:"Progresso salvo. Você pode continuar depois", rematch:"🔄 Revanche", rematch_bot:"🔄 Jogar de novo", rematch_wait:"Aguardando o adversário…", rematch_req:"O adversário quer revanche! Toque para começar", opp_gone:"O adversário saiu", attack:"de ataque", tie:"Rodada empatada", photo_loading:"Carregando foto…", next_mult:"Multiplicadores da próxima rodada —", foe:"Adversário", join_fail:"O adversário desconectou. Procurando outro…",
+ matching:"Procurando adversário…", matching_desc:"Se ninguém entrar em 30 s, você vai jogar contra um bot de treino",
+ room_wait:"Aguardando seu amigo…", room_desc:"Compartilhe este código com um amigo", copy_code:"Copiar código", copied:"Copiado!",
+ round:"Rodada", answer:"Peso real", me:"Você", bot_prefix:"", submit_done:"Enviado! Aguardando o adversário…",
+ timeout:"Tempo esgotado!", damage:"dano", pts:" pts", win:"Vitória!", lose:"Derrota…", draw:"Empate",
+ win_sub:"Mais preciso que uma balança!", lose_sub:"Na próxima, capriche no peso.", draw_sub:"Equilíbrio perfeito!",
+ opp_left:"O adversário saiu. Você venceu!", share:"Compartilhar resultado", home:"Início", quit:"Sair",
+ daily_title:"Desafio diário", daily_max:"/ 25.000 pts", daily_next:"Novo desafio à meia-noite (UTC)!",
+ daily_done:"Você já completou o desafio de hoje", lang:"Idioma", unit:"Unidade de peso", sound:"Som", on:"Ligado", off:"Desligado",
+ settings_note:"Os nomes dos itens aparecem em inglês. Mudar a unidade muda tanto as respostas quanto a unidade de digitação.",
+ nick_short:"O apelido precisa ter pelo menos 2 caracteres", nick_bad:"Esse apelido não é permitido", no_room:"Sala não encontrada",
+ room_full:"A sala está cheia", practice_end:"Treino encerrado", rounds_played:"Rodadas jogadas", avg_pts:"Média",
+ mts:"coisas para pesar", cats_n:"categorias", err:"erro", guess_ph:"Peso", next_in:"Próxima rodada em instantes…", start_in:"Começou!",
+ share_daily:(n,s,e)=>`Weighle diário #${n}\n⚖️ ${N(s)} / ${N(25000)} pts\n${e}\n`,
+ share_battle:(w,me,foe)=>`Weighle ⚔️ Duelo 1 contra 1 — ${w}\n${me} vs ${foe}\n`,
+ version_err:"Sua versão do jogo é diferente da do adversário. Atualize a página!",
+ room_title:"Criar sala de amigos", mode_normal:"Normal", mode_select:"Escolher categorias",
+ mode_normal_desc:"Cada rodada é sorteada entre todas as categorias.",
+ mode_select_desc:"As rodadas só saem das categorias escolhidas. Escolha quantas quiser.",
+ all:"Selecionar tudo", none:"Limpar", make_room:"Criar sala",
+ need_cat:"Escolha pelo menos uma categoria", need_more:"As categorias escolhidas precisam somar pelo menos 15 itens",
+ cat_sum:(n,q)=>`${n} categorias · ${q} itens`, mode_line_normal:"Normal · todas as categorias", mode_line_select:"Categorias · ",
+ more:n=>` e mais ${n}`, bad_num:"Digite um número",
+ ready:"✋ Pronto", unready:"Cancelar", ready_on:"✅ Pronto", ready_off:"⏳ Ainda não", lobby_title:"Começa quando os dois estiverem prontos", empty_seat:"Lugar vago", lobby_wait_foe:"Quando seu amigo entrar, os dois tocam em Pronto",
+},
+ja:{
+ tag:"あらゆるものの重さを当てよう。世界中と対戦。", nick:"ニックネーム（2〜12文字）", daily:"📅 デイリーチャレンジ",
+ battle:"⚔️ 1対1バトル", practice:"🎯 練習モード", settings:"⚙️ 設定", quick:"⚡ クイックマッチ",
+ create:"🏠 ルーム作成（フレンド戦）", join:"参加", join_lbl:"コードで参加",
+ battle_note:"HP 10,000からスタート。毎ラウンド両者が0〜5,000点を獲得し、点数が高い方が「点差 × 自分の倍率」だけ相手のHPを削ります。例：自分4,300点、相手2,400点 → 相手 -1,900。倍率は両者×1から始まり、ラウンドに勝つたびに+0.5。最大15ラウンド。フレンド戦は2人とも「準備OK」を押すと始まり、カテゴリーも選べます。",
+ nick_chars:"使えるのは文字・数字・スペース・_・- のみです", nick_taken:"このニックネームは使用中です", nick_free:"使用できるニックネームです", nick_mine:"あなたのニックネーム",
+ recover_q:"あなたのものですか？", recover_btn:"復元", recover_ok:"ニックネームを復元しました！", recover_bad:"復元コードが違います", recover_ph:"復元コード",
+ offline:"サーバーに接続できません。ネット接続を確認してください", code_title:"自分の復元コード", copy_code2:"復元コードをコピー",
+ code_note:"別の端末やブラウザでこのニックネーム（と戦績）を使うにはこのコードが必要です。他人に教えないでください。",
+ w:"勝", l:"敗", d:"分", daily_best:"デイリー最高", photo_src:"写真の出典（Wikimedia Commons）", daily_saved:"進行状況を保存しました。あとで続きができます", rematch:"🔄 再戦", rematch_bot:"🔄 もう一度", rematch_wait:"相手の承認を待っています…", rematch_req:"相手が再戦を希望しています！押すとすぐ始まります", opp_gone:"相手が退出しました", attack:"ダメージ", tie:"引き分けラウンド", photo_loading:"写真を読み込み中…", next_mult:"次のラウンドの倍率 —", foe:"相手", join_fail:"相手との接続が切れました。再検索中…",
+ matching:"対戦相手を探しています…", matching_desc:"30秒以内に相手が見つからなければ練習ボットと対戦します",
+ room_wait:"フレンドを待っています…", room_desc:"このコードをフレンドに伝えてください", copy_code:"コードをコピー", copied:"コピーしました！",
+ round:"ラウンド", answer:"実際の重さ", me:"自分", bot_prefix:"", submit_done:"送信完了！相手を待っています…",
+ timeout:"時間切れ！", damage:"ダメージ", pts:"点", win:"勝利！", lose:"敗北…", draw:"引き分け",
+ win_sub:"はかりより正確な目！", lose_sub:"次はもっと重みのある勝負を。", draw_sub:"完全に互角！",
+ opp_left:"相手が退出しました。不戦勝！", share:"結果をシェア", home:"ホーム", quit:"やめる",
+ daily_title:"デイリーチャレンジ", daily_max:"/ 25,000点", daily_next:"明日0時（UTC）に新しい問題が出ます！",
+ daily_done:"今日のチャレンジはもう完了しています", lang:"言語", unit:"重さの単位", sound:"効果音", on:"オン", off:"オフ",
+ settings_note:"問題の名前は英語で表示されます。単位を変えると答えの表示と入力の単位が両方変わります。",
+ nick_short:"ニックネームは2文字以上にしてください", nick_bad:"このニックネームは使えません", no_room:"ルームが見つかりません",
+ room_full:"ルームが満員です", practice_end:"練習終了", rounds_played:"プレイしたラウンド", avg_pts:"平均点",
+ mts:"個の重さ問題", cats_n:"カテゴリー", err:"誤差", guess_ph:"重さ", next_in:"まもなく次のラウンド…", start_in:"ゲーム開始！",
+ share_daily:(n,s,e)=>`Weighle デイリー #${n}\n⚖️ ${N(s)} / ${N(25000)}点\n${e}\n`,
+ share_battle:(w,me,foe)=>`Weighle ⚔️ 1対1バトル ${w}\n${me} vs ${foe}\n`,
+ version_err:"相手とゲームのバージョンが違います。ページを再読み込みしてください！",
+ room_title:"フレンド戦ルームを作成", mode_normal:"通常戦", mode_select:"カテゴリー選択戦",
+ mode_normal_desc:"すべてのカテゴリーから1問ずつランダムに出題されます。",
+ mode_select_desc:"選んだカテゴリーからだけ出題されます。複数選べます。",
+ all:"すべて選択", none:"すべて解除", make_room:"ルーム作成",
+ need_cat:"カテゴリーを1つ以上選んでください", need_more:"選んだカテゴリーの問題が合計15問以上必要です",
+ cat_sum:(n,q)=>`${n}カテゴリー・${q}問`, mode_line_normal:"通常戦・全カテゴリー", mode_line_select:"選択戦・",
+ more:n=>` ほか${n}件`, bad_num:"数字を入力してください",
+ ready:"✋ 準備OK", unready:"準備を取り消す", ready_on:"✅ 準備OK", ready_off:"⏳ 準備中", lobby_title:"2人とも準備OKで開始します", empty_seat:"空き席", lobby_wait_foe:"フレンドが入ったら2人とも準備OKを押してください",
+},
+de:{
+ tag:"Errate das Gewicht von allem. Fordere alle heraus.", nick:"Spitzname (2–12 Zeichen)", daily:"📅 Tägliche Challenge",
+ battle:"⚔️ 1-gegen-1-Duell", practice:"🎯 Training", settings:"⚙️ Einstellungen", quick:"⚡ Schnelles Spiel",
+ create:"🏠 Raum erstellen (Freunde)", join:"Beitreten", join_lbl:"Mit Code beitreten",
+ battle_note:"Ihr startet mit 10.000 Lebenspunkten. In jeder Runde bekommen beide 0–5.000 Punkte; wer mehr hat, zieht dem Gegner (Punktedifferenz) × eigenen Multiplikator ab. Beispiel: du 4.300, Gegner 2.400 → Gegner −1.900. Beide starten mit ×1, jede gewonnene Runde erhöht deinen Multiplikator um +0,5. Maximal 15 Runden. Freundesräume starten, wenn beide auf Bereit tippen, und erlauben die Wahl von Kategorien.",
+ nick_chars:"Nur Buchstaben, Zahlen, Leerzeichen, _ oder -", nick_taken:"Dieser Spitzname ist vergeben", nick_free:"Spitzname verfügbar", nick_mine:"Dein Spitzname",
+ recover_q:"Gehört er dir?", recover_btn:"Wiederherstellen", recover_ok:"Spitzname wiederhergestellt!", recover_bad:"Falscher Wiederherstellungscode", recover_ph:"Wiederherstellungscode",
+ offline:"Keine Verbindung zum Server. Prüfe deine Internetverbindung", code_title:"Mein Wiederherstellungscode", copy_code2:"Code kopieren",
+ code_note:"Mit diesem Code kannst du den Spitznamen (und deine Statistik) auf einem anderen Gerät oder Browser nutzen. Gib ihn nicht weiter.",
+ w:"S", l:"N", d:"U", daily_best:"Bestes Tagesergebnis", photo_src:"Fotoquelle (Wikimedia Commons)", daily_saved:"Fortschritt gespeichert. Du kannst später weitermachen", rematch:"🔄 Revanche", rematch_bot:"🔄 Nochmal spielen", rematch_wait:"Warte auf den Gegner…", rematch_req:"Dein Gegner will eine Revanche! Tippen zum Starten", opp_gone:"Der Gegner hat das Spiel verlassen", attack:"Schaden", tie:"Unentschiedene Runde", photo_loading:"Foto wird geladen…", next_mult:"Multiplikatoren nächste Runde —", foe:"Gegner", join_fail:"Verbindung zum Gegner verloren. Suche erneut…",
+ matching:"Suche Gegner…", matching_desc:"Wenn in 30 s niemand beitritt, spielst du gegen einen Trainings-Bot",
+ room_wait:"Warte auf deinen Freund…", room_desc:"Teile diesen Code mit einem Freund", copy_code:"Code kopieren", copied:"Kopiert!",
+ round:"Runde", answer:"Tatsächliches Gewicht", me:"Du", bot_prefix:"", submit_done:"Abgegeben! Warte auf den Gegner…",
+ timeout:"Zeit abgelaufen!", damage:"Schaden", pts:" Pkt.", win:"Sieg!", lose:"Niederlage…", draw:"Unentschieden",
+ win_sub:"Genauer als jede Waage!", lose_sub:"Nächstes Mal mehr Gewicht reinlegen.", draw_sub:"Perfekt ausgeglichen!",
+ opp_left:"Der Gegner ist weg. Du gewinnst!", share:"Ergebnis teilen", home:"Start", quit:"Beenden",
+ daily_title:"Tägliche Challenge", daily_max:"/ 25.000 Pkt.", daily_next:"Neues Rätsel um Mitternacht (UTC)!",
+ daily_done:"Du hast die heutige Challenge schon abgeschlossen", lang:"Sprache", unit:"Gewichtseinheit", sound:"Ton", on:"An", off:"Aus",
+ settings_note:"Die Namen der Objekte werden auf Englisch angezeigt. Eine andere Einheit ändert sowohl die Antworten als auch deine Eingabe.",
+ nick_short:"Der Spitzname braucht mindestens 2 Zeichen", nick_bad:"Dieser Spitzname ist nicht erlaubt", no_room:"Raum nicht gefunden",
+ room_full:"Der Raum ist voll", practice_end:"Training beendet", rounds_played:"Gespielte Runden", avg_pts:"Ø Punkte",
+ mts:"Dinge zum Wiegen", cats_n:"Kategorien", err:"Abweichung", guess_ph:"Gewicht", next_in:"Gleich geht's weiter…", start_in:"Spielstart!",
+ share_daily:(n,s,e)=>`Weighle Täglich #${n}\n⚖️ ${N(s)} / ${N(25000)} Pkt.\n${e}\n`,
+ share_battle:(w,me,foe)=>`Weighle ⚔️ 1-gegen-1-Duell — ${w}\n${me} vs ${foe}\n`,
+ version_err:"Deine Spielversion passt nicht zu der des Gegners. Bitte Seite neu laden!",
+ room_title:"Freundesraum erstellen", mode_normal:"Standard", mode_select:"Kategorien wählen",
+ mode_normal_desc:"Jede Runde wird zufällig aus allen Kategorien gezogen.",
+ mode_select_desc:"Runden kommen nur aus den gewählten Kategorien. Mehrfachauswahl möglich.",
+ all:"Alle wählen", none:"Auswahl löschen", make_room:"Raum erstellen",
+ need_cat:"Wähle mindestens eine Kategorie", need_more:"Die gewählten Kategorien brauchen zusammen mindestens 15 Objekte",
+ cat_sum:(n,q)=>`${n} Kategorien · ${q} Objekte`, mode_line_normal:"Standard · alle Kategorien", mode_line_select:"Kategorien · ",
+ more:n=>` und ${n} weitere`, bad_num:"Bitte gib eine Zahl ein",
+ ready:"✋ Bereit", unready:"Doch nicht bereit", ready_on:"✅ Bereit", ready_off:"⏳ Nicht bereit", lobby_title:"Start, sobald beide bereit sind", empty_seat:"Freier Platz", lobby_wait_foe:"Wenn dein Freund da ist, tippt beide auf Bereit",
+},
+fr:{
+ tag:"Devine le poids de tout. Affronte tout le monde.", nick:"Pseudo (2 à 12 caractères)", daily:"📅 Défi du jour",
+ battle:"⚔️ Duel 1 contre 1", practice:"🎯 Entraînement", settings:"⚙️ Réglages", quick:"⚡ Partie rapide",
+ create:"🏠 Créer un salon (amis)", join:"Rejoindre", join_lbl:"Rejoindre avec un code",
+ battle_note:"Vous commencez avec 10 000 PV. À chaque manche, chacun marque de 0 à 5 000 points ; celui qui marque le plus retire à l'adversaire (écart de points) × son multiplicateur. Ex. : toi 4 300, l'adversaire 2 400 → il perd 1 900. Tout le monde commence à ×1 et chaque manche gagnée ajoute +0,5 à ton multiplicateur. 15 manches maximum. Les salons entre amis démarrent quand les deux appuient sur Prêt et permettent de choisir des catégories.",
+ nick_chars:"Lettres, chiffres, espaces, _ ou - uniquement", nick_taken:"Ce pseudo est déjà pris", nick_free:"Pseudo disponible", nick_mine:"Ton pseudo",
+ recover_q:"C'est le tien ?", recover_btn:"Récupérer", recover_ok:"Pseudo récupéré !", recover_bad:"Code de récupération incorrect", recover_ph:"Code de récupération",
+ offline:"Impossible de joindre le serveur. Vérifie ta connexion", code_title:"Mon code de récupération", copy_code2:"Copier le code de récupération",
+ code_note:"Ce code te permet d'utiliser ce pseudo (et ton historique) sur un autre appareil ou navigateur. Ne le partage pas.",
+ w:"V", l:"D", d:"N", daily_best:"Meilleur score du jour", photo_src:"Source de la photo (Wikimedia Commons)", daily_saved:"Progression enregistrée. Tu pourras reprendre plus tard", rematch:"🔄 Revanche", rematch_bot:"🔄 Rejouer", rematch_wait:"En attente de l'adversaire…", rematch_req:"Ton adversaire veut une revanche ! Appuie pour commencer", opp_gone:"L'adversaire est parti", attack:"dégâts", tie:"Manche nulle", photo_loading:"Chargement de la photo…", next_mult:"Multiplicateurs de la prochaine manche —", foe:"Adversaire", join_fail:"L'adversaire s'est déconnecté. Nouvelle recherche…",
+ matching:"Recherche d'un adversaire…", matching_desc:"Si personne ne rejoint en 30 s, tu affronteras un bot d'entraînement",
+ room_wait:"En attente de ton ami…", room_desc:"Partage ce code avec un ami", copy_code:"Copier le code", copied:"Copié !",
+ round:"Manche", answer:"Poids réel", me:"Toi", bot_prefix:"", submit_done:"Envoyé ! En attente de l'adversaire…",
+ timeout:"Temps écoulé !", damage:"dégâts", pts:" pts", win:"Victoire !", lose:"Défaite…", draw:"Égalité",
+ win_sub:"Plus précis qu'une balance !", lose_sub:"La prochaine fois, mets plus de poids.", draw_sub:"Équilibre parfait !",
+ opp_left:"L'adversaire est parti. Tu gagnes !", share:"Partager le résultat", home:"Accueil", quit:"Quitter",
+ daily_title:"Défi du jour", daily_max:"/ 25 000 pts", daily_next:"Nouveau défi à minuit (UTC) !",
+ daily_done:"Tu as déjà terminé le défi du jour", lang:"Langue", unit:"Unité de poids", sound:"Son", on:"Activé", off:"Désactivé",
+ settings_note:"Les noms des objets s'affichent en anglais. Changer d'unité modifie à la fois les réponses et l'unité de saisie.",
+ nick_short:"Le pseudo doit faire au moins 2 caractères", nick_bad:"Ce pseudo n'est pas autorisé", no_room:"Salon introuvable",
+ room_full:"Le salon est plein", practice_end:"Entraînement terminé", rounds_played:"Manches jouées", avg_pts:"Moyenne",
+ mts:"choses à peser", cats_n:"catégories", err:"écart", guess_ph:"Poids", next_in:"Prochaine manche dans un instant…", start_in:"C'est parti !",
+ share_daily:(n,s,e)=>`Weighle du jour #${n}\n⚖️ ${N(s)} / ${N(25000)} pts\n${e}\n`,
+ share_battle:(w,me,foe)=>`Weighle ⚔️ Duel 1 contre 1 — ${w}\n${me} vs ${foe}\n`,
+ version_err:"Ta version du jeu ne correspond pas à celle de l'adversaire. Recharge la page !",
+ room_title:"Créer un salon entre amis", mode_normal:"Standard", mode_select:"Choisir les catégories",
+ mode_normal_desc:"Chaque manche est tirée au hasard dans toutes les catégories.",
+ mode_select_desc:"Les manches viennent uniquement des catégories choisies. Tu peux en choisir plusieurs.",
+ all:"Tout sélectionner", none:"Tout effacer", make_room:"Créer le salon",
+ need_cat:"Choisis au moins une catégorie", need_more:"Les catégories choisies doivent totaliser au moins 15 objets",
+ cat_sum:(n,q)=>`${n} catégories · ${q} objets`, mode_line_normal:"Standard · toutes les catégories", mode_line_select:"Catégories · ",
+ more:n=>` et ${n} de plus`, bad_num:"Saisis un nombre",
+ ready:"✋ Prêt", unready:"Annuler", ready_on:"✅ Prêt", ready_off:"⏳ Pas prêt", lobby_title:"La partie démarre quand les deux sont prêts", empty_seat:"Place libre", lobby_wait_foe:"Quand ton ami arrive, appuyez tous les deux sur Prêt",
+},
+};
+/* 지원 언어: 처음 들어오면 브라우저 언어로 자동 선택 (지원하지 않으면 다음 순위 언어 → 없으면 영어).
+   설정에서 직접 고르면 그 언어를 기억 */
+const LANGS=["ko","en","es","pt","ja","de","fr"];
+const LOCALE={ko:"ko-KR",en:"en-US",es:"es-ES",pt:"pt-BR",ja:"ja-JP",de:"de-DE",fr:"fr-FR"};
+function detectLang(){
+  const list=(navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language||"en"];
+  for(const l of list){ const p=String(l||"").toLowerCase().split(/[-_]/)[0]; if(LANGS.includes(p)) return p; }
+  return "en";
+}
+let L = localStorage.getItem("wl_lang");
+if(!LANGS.includes(L)) L = detectLang();
+const t = k => (STR[L] && STR[L][k]!==undefined) ? STR[L][k] : STR.en[k];
+const LOC = () => LOCALE[L]||"en-US";
+const N = (x,o) => Number(x).toLocaleString(LOC(),o);   // 나라별 숫자 표기 (25,000 / 25.000 / 25 000)
 
 /* ================= 상태/설정 ================= */
 const $ = id => document.getElementById(id);
 const MT = window.WEIGHTS;
 let sound = localStorage.getItem("wl_sound") !== "0";
 const BAD = ["시발","씨발","씨빨","병신","병1신","개새","존나","좆","자지","보지","니미","걸레","창녀","fuck","shit","bitch","asshole","nigger","nigga","cunt","faggot","porn","sex","dick","pussy","whore","rape"];
-const BOTNAMES = ["저울요정","무게측정기9000","근육고양이","헤비급곰돌이","깃털도사","ScaleBot","HeavyMetal","FeatherFox"];
+const BOTNAMES = ["저울요정","무게측정기9000","근육고양이","헤비급곰돌이","깃털도사","ScaleBot","HeavyMetal","FeatherFox","GramGuru","TonTitan"];
 const LAUNCH_UTC = Date.UTC(2026,9,16);   // 데일리 #1 날짜 (UTC)
 
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -595,7 +778,7 @@ function renderStats(){
   const s=myStats||{}, el=$("mystats");
   const parts=[];
   if(s.games) parts.push(`🏆 ${s.wins||0}${t("w")} ${s.losses||0}${t("l")}`+(s.draws?` ${s.draws}${t("d")}`:""));
-  if(s.best) parts.push(`📅 ${t("daily_best")} ${s.best.toLocaleString()}`);
+  if(s.best) parts.push(`📅 ${t("daily_best")} ${s.best.toLocaleString(LOC())}`);
   el.textContent=parts.join("  ·  ");
 }
 async function recordBattle(kind){
@@ -619,17 +802,18 @@ $("nick").value = localStorage.getItem("wl_nick") || "";
 
 /* ===== 카테고리 (국기 자리에 아이콘) ===== */
 const CATS={
- 1:{ic:"🦁",ko:"포유류",en:"Mammals"}, 2:{ic:"🐕",ko:"견종",en:"Dog breeds"}, 3:{ic:"🦅",ko:"조류",en:"Birds"},
- 4:{ic:"🐋",ko:"바다 생물",en:"Sea life"}, 5:{ic:"🐊",ko:"파충류·양서류",en:"Reptiles & amphibians"}, 6:{ic:"🐝",ko:"곤충·거미",en:"Insects & spiders"},
- 7:{ic:"🦖",ko:"공룡·고생물",en:"Prehistoric life"}, 8:{ic:"🍎",ko:"과일·채소",en:"Fruits & vegetables"}, 9:{ic:"🍔",ko:"음식",en:"Food"},
- 10:{ic:"🚗",ko:"자동차·오토바이",en:"Cars & motorcycles"}, 11:{ic:"✈️",ko:"항공기",en:"Aircraft"}, 12:{ic:"🚢",ko:"선박",en:"Ships"},
- 13:{ic:"🚂",ko:"철도",en:"Railways"}, 14:{ic:"🚀",ko:"우주",en:"Space"}, 15:{ic:"🪖",ko:"군용 차량",en:"Military vehicles"},
- 16:{ic:"🚜",ko:"중장비",en:"Heavy machinery"}, 17:{ic:"🔔",ko:"종",en:"Bells"}, 18:{ic:"🗿",ko:"동상·기념물",en:"Statues & monuments"},
- 19:{ic:"💎",ko:"보석·유물",en:"Gems & treasures"}, 20:{ic:"🪙",ko:"동전·지폐",en:"Coins & bills"}, 21:{ic:"🏆",ko:"스포츠",en:"Sports"},
- 22:{ic:"📱",ko:"전자기기",en:"Electronics"}, 23:{ic:"🏛️",ko:"건축물·구조물",en:"Structures"}, 24:{ic:"🎹",ko:"생활·악기",en:"Everyday & instruments"}
+ 1:{ic:"🦁",ko:"포유류",en:"Mammals",es:"Mamíferos",pt:"Mamíferos",ja:"哺乳類",de:"Säugetiere",fr:"Mammifères"}, 2:{ic:"🐕",ko:"견종",en:"Dog breeds",es:"Razas de perro",pt:"Raças de cachorro",ja:"犬種",de:"Hunderassen",fr:"Races de chiens"}, 3:{ic:"🦅",ko:"조류",en:"Birds",es:"Aves",pt:"Aves",ja:"鳥類",de:"Vögel",fr:"Oiseaux"},
+ 4:{ic:"🐋",ko:"바다 생물",en:"Sea life",es:"Vida marina",pt:"Vida marinha",ja:"海の生き物",de:"Meerestiere",fr:"Vie marine"}, 5:{ic:"🐊",ko:"파충류·양서류",en:"Reptiles & amphibians",es:"Reptiles y anfibios",pt:"Répteis e anfíbios",ja:"爬虫類・両生類",de:"Reptilien & Amphibien",fr:"Reptiles et amphibiens"}, 6:{ic:"🐝",ko:"곤충·거미",en:"Insects & spiders",es:"Insectos y arañas",pt:"Insetos e aranhas",ja:"昆虫・クモ",de:"Insekten & Spinnen",fr:"Insectes et araignées"},
+ 7:{ic:"🦖",ko:"공룡·고생물",en:"Prehistoric life",es:"Vida prehistórica",pt:"Vida pré-histórica",ja:"恐竜・古生物",de:"Urzeit-Tiere",fr:"Vie préhistorique"}, 8:{ic:"🍎",ko:"과일·채소",en:"Fruits & vegetables",es:"Frutas y verduras",pt:"Frutas e legumes",ja:"果物・野菜",de:"Obst & Gemüse",fr:"Fruits et légumes"}, 9:{ic:"🍔",ko:"음식",en:"Food",es:"Comida",pt:"Comida",ja:"食べ物",de:"Essen",fr:"Nourriture"},
+ 10:{ic:"🚗",ko:"자동차·오토바이",en:"Cars & motorcycles",es:"Coches y motos",pt:"Carros e motos",ja:"車・バイク",de:"Autos & Motorräder",fr:"Voitures et motos"}, 11:{ic:"✈️",ko:"항공기",en:"Aircraft",es:"Aeronaves",pt:"Aeronaves",ja:"航空機",de:"Flugzeuge",fr:"Avions"}, 12:{ic:"🚢",ko:"선박",en:"Ships",es:"Barcos",pt:"Navios",ja:"船",de:"Schiffe",fr:"Navires"},
+ 13:{ic:"🚂",ko:"철도",en:"Railways",es:"Trenes",pt:"Trens",ja:"鉄道",de:"Eisenbahn",fr:"Trains"}, 14:{ic:"🚀",ko:"우주",en:"Space",es:"Espacio",pt:"Espaço",ja:"宇宙",de:"Raumfahrt",fr:"Espace"}, 15:{ic:"🪖",ko:"군용 차량",en:"Military vehicles",es:"Vehículos militares",pt:"Veículos militares",ja:"軍用車両",de:"Militärfahrzeuge",fr:"Véhicules militaires"},
+ 16:{ic:"🚜",ko:"중장비",en:"Heavy machinery",es:"Maquinaria pesada",pt:"Máquinas pesadas",ja:"重機",de:"Schwere Maschinen",fr:"Engins lourds"}, 17:{ic:"🔔",ko:"종",en:"Bells",es:"Campanas",pt:"Sinos",ja:"鐘",de:"Glocken",fr:"Cloches"}, 18:{ic:"🗿",ko:"동상·기념물",en:"Statues & monuments",es:"Estatuas y monumentos",pt:"Estátuas e monumentos",ja:"像・記念碑",de:"Statuen & Denkmäler",fr:"Statues et monuments"},
+ 19:{ic:"💎",ko:"보석·유물",en:"Gems & treasures",es:"Gemas y tesoros",pt:"Joias e tesouros",ja:"宝石・遺物",de:"Edelsteine & Schätze",fr:"Pierres et trésors"}, 20:{ic:"🪙",ko:"동전·지폐",en:"Coins & bills",es:"Monedas y billetes",pt:"Moedas e cédulas",ja:"硬貨・紙幣",de:"Münzen & Scheine",fr:"Pièces et billets"}, 21:{ic:"🏆",ko:"스포츠",en:"Sports",es:"Deportes",pt:"Esportes",ja:"スポーツ",de:"Sport",fr:"Sport"},
+ 22:{ic:"📱",ko:"전자기기",en:"Electronics",es:"Electrónica",pt:"Eletrônicos",ja:"電子機器",de:"Elektronik",fr:"Électronique"}, 23:{ic:"🏛️",ko:"건축물·구조물",en:"Structures",es:"Construcciones",pt:"Construções",ja:"建造物",de:"Bauwerke",fr:"Constructions"}, 24:{ic:"🎹",ko:"생활·악기",en:"Everyday & instruments",es:"Objetos e instrumentos",pt:"Objetos e instrumentos",ja:"日用品・楽器",de:"Alltag & Instrumente",fr:"Objets et instruments"}
 };
-const catName = c => { const x=CATS[c]; return x ? (L==="ko"?x.ko:x.en) : ""; };
-/* ===== 무게 기준 (같은 동물·차라도 기준이 다르면 답이 달라지므로 문제 아래에 표시) ===== */
+const catName = c => { const x=CATS[c]; return x ? (x[L]||x.en) : ""; };
+/* ===== 무게 기준 (같은 동물·차라도 기준이 다르면 답이 달라지므로 문제 아래에 표시) =====
+   QUAL[코드] = [영어, 한국어], QUAL_I18N[코드] = {es,pt,ja,de,fr} */
 const QUAL={AM:["Adult male, average","수컷 성체 평균"],AF:["Adult female, average","암컷 성체 평균"],AA:["Adult, average","성체 평균"],
  STD:["Breed standard, average","견종 표준 평균"],EST:["Estimate","추정치"],USDA:["Medium size (USDA)","중간 크기 (USDA 기준)"],
  CW:["Curb weight","공차중량"],DRY:["Dry weight","건조중량"],MTOW:["Max takeoff weight","최대 이륙 중량"],EW:["Empty weight","자체 중량"],
@@ -637,9 +821,20 @@ const QUAL={AM:["Adult male, average","수컷 성체 평균"],AF:["Adult female,
  LM:["Total mass at liftoff","발사 시 전체 질량"],LAUNCH:["Launch mass","발사 질량"],CB:["Combat weight","전투 중량"],
  LOCO:["Locomotive + tender","기관차 + 탄수차"],REG:["Official regulation","공식 규격"],TOT:["Total weight","전체 무게"],
  SPEC:["Official spec","공식 제원"],M:["",""]};
+const QUAL_I18N={"AM":{"es":"Macho adulto (media)","pt":"Macho adulto (média)","ja":"オス成体の平均","de":"Erwachsenes Männchen (Durchschnitt)","fr":"Mâle adulte (moyenne)"},"AF":{"es":"Hembra adulta (media)","pt":"Fêmea adulta (média)","ja":"メス成体の平均","de":"Erwachsenes Weibchen (Durchschnitt)","fr":"Femelle adulte (moyenne)"},"AA":{"es":"Adulto (media)","pt":"Adulto (média)","ja":"成体の平均","de":"Erwachsen (Durchschnitt)","fr":"Adulte (moyenne)"},"STD":{"es":"Estándar de la raza (media)","pt":"Padrão da raça (média)","ja":"犬種標準の平均","de":"Rassestandard (Durchschnitt)","fr":"Standard de la race (moyenne)"},"EST":{"es":"Estimación","pt":"Estimativa","ja":"推定値","de":"Schätzung","fr":"Estimation"},"USDA":{"es":"Tamaño mediano (USDA)","pt":"Tamanho médio (USDA)","ja":"中サイズ（USDA基準）","de":"Mittlere Größe (USDA)","fr":"Taille moyenne (USDA)"},"CW":{"es":"Peso en vacío","pt":"Peso em ordem de marcha","ja":"車両重量","de":"Leergewicht","fr":"Poids à vide"},"DRY":{"es":"Peso en seco","pt":"Peso seco","ja":"乾燥重量","de":"Trockengewicht","fr":"Poids à sec"},"MTOW":{"es":"Peso máximo al despegue","pt":"Peso máximo de decolagem","ja":"最大離陸重量","de":"Max. Startgewicht","fr":"Masse max. au décollage"},"EW":{"es":"Peso vacío","pt":"Peso vazio","ja":"自重","de":"Leermasse","fr":"Masse à vide"},"FL":{"es":"Desplazamiento a plena carga","pt":"Deslocamento carregado","ja":"満載排水量","de":"Einsatzverdrängung","fr":"Déplacement à pleine charge"},"DISP":{"es":"Desplazamiento","pt":"Deslocamento","ja":"排水量","de":"Verdrängung","fr":"Déplacement"},"SUB":{"es":"Desplazamiento en inmersión","pt":"Deslocamento submerso","ja":"水中排水量","de":"Verdrängung getaucht","fr":"Déplacement en plongée"},"LM":{"es":"Masa total al despegue","pt":"Massa total no lançamento","ja":"打ち上げ時の総質量","de":"Startmasse gesamt","fr":"Masse totale au décollage"},"LAUNCH":{"es":"Masa de lanzamiento","pt":"Massa de lançamento","ja":"打ち上げ質量","de":"Startmasse","fr":"Masse au lancement"},"CB":{"es":"Peso en combate","pt":"Peso em combate","ja":"戦闘重量","de":"Gefechtsgewicht","fr":"Poids au combat"},"LOCO":{"es":"Locomotora + ténder","pt":"Locomotiva + tênder","ja":"機関車＋炭水車","de":"Lok + Tender","fr":"Locomotive + tender"},"REG":{"es":"Reglamento oficial","pt":"Regra oficial","ja":"公式規格","de":"Offizielle Vorgabe","fr":"Règlement officiel"},"TOT":{"es":"Peso total","pt":"Peso total","ja":"総重量","de":"Gesamtgewicht","fr":"Poids total"},"SPEC":{"es":"Ficha técnica oficial","pt":"Especificação oficial","ja":"公式スペック","de":"Offizielle Angabe","fr":"Fiche technique officielle"}};
+/* 개별 지정 기준 ("~영문~한글")의 다른 언어 번역 — 영문을 키로 사용 */
+const QX_I18N={"1 pood":{"es":"1 pud","pt":"1 pood","ja":"1プード","de":"1 Pud","fr":"1 poud"},"2023 minimum incl. driver":{"es":"Mínimo de 2023 con piloto","pt":"Mínimo de 2023 com piloto","ja":"2023年規定の最低重量（ドライバー込み）","de":"Mindestgewicht 2023 inkl. Fahrer","fr":"Minimum 2023, pilote compris"},"400 troy oz":{"es":"400 onzas troy","pt":"400 onças troy","ja":"400トロイオンス","de":"400 Feinunzen","fr":"400 onces troy"},"80 gsm":{"es":"80 g/m²","pt":"80 g/m²","ja":"80g/㎡","de":"80 g/m²","fr":"80 g/m²"},"Adult male (estimate)":{"es":"Macho adulto (estimación)","pt":"Macho adulto (estimativa)","ja":"オス成体の推定値","de":"Erwachsenes Männchen (Schätzung)","fr":"Mâle adulte (estimation)"},"Aluminum case":{"es":"Caja de aluminio","pt":"Caixa de alumínio","ja":"アルミニウムケース","de":"Aluminiumgehäuse","fr":"Boîtier en aluminium"},"Empty (tare)":{"es":"Vacío (tara)","pt":"Vazio (tara)","ja":"空の状態（自重）","de":"Leer (Tara)","fr":"Vide (tare)"},"French standard":{"es":"Estándar francés","pt":"Padrão francês","ja":"フランスの標準","de":"Französischer Standard","fr":"Standard français"},"Hull weight":{"es":"Peso del casco","pt":"Peso do casco","ja":"船体重量","de":"Rumpfgewicht","fr":"Poids de la coque"},"Large adult male":{"es":"Macho adulto grande","pt":"Macho adulto grande","ja":"大型のオス成体","de":"Großes erwachsenes Männchen","fr":"Grand mâle adulte"},"Large adult":{"es":"Adulto grande","pt":"Adulto grande","ja":"大型の成体","de":"Großes erwachsenes Tier","fr":"Grand adulte"},"Largest specimens":{"es":"Ejemplares más grandes","pt":"Maiores exemplares","ja":"最大級の個体","de":"Größte Exemplare","fr":"Plus grands spécimens"},"Loaded weight":{"es":"Peso cargado","pt":"Peso carregado","ja":"搭載時重量","de":"Beladenes Gewicht","fr":"Masse en charge"},"Locomotive only":{"es":"Solo la locomotora","pt":"Só a locomotiva","ja":"機関車のみ","de":"Nur Lokomotive","fr":"Locomotive seule"},"Max allowed":{"es":"Máximo permitido","pt":"Máximo permitido","ja":"規定の最大","de":"Maximal erlaubt","fr":"Maximum autorisé"},"Max vertical takeoff weight":{"es":"Peso máx. de despegue vertical","pt":"Peso máx. de decolagem vertical","ja":"最大垂直離陸重量","de":"Max. Senkrechtstartgewicht","fr":"Masse max. au décollage vertical"},"One head":{"es":"Una pieza","pt":"Uma cabeça","ja":"1株","de":"Ein Kopf","fr":"Une tête"},"Smilodon populator (estimate)":{"es":"Smilodon populator (estimación)","pt":"Smilodon populator (estimativa)","ja":"スミロドン・ポプラトルの推定値","de":"Smilodon populator (Schätzung)","fr":"Smilodon populator (estimation)"},"Standard size":{"es":"Tamaño estándar","pt":"Tamanho padrão","ja":"スタンダードサイズ","de":"Standardgröße","fr":"Taille standard"},"Steel arch":{"es":"Arco de acero","pt":"Arco de aço","ja":"鋼鉄アーチ","de":"Stahlbogen","fr":"Arche en acier"},"Steelwork":{"es":"Estructura de acero","pt":"Estrutura de aço","ja":"鋼鉄構造","de":"Stahlkonstruktion","fr":"Structure en acier"},"Surfaced displacement":{"es":"Desplazamiento en superficie","pt":"Deslocamento na superfície","ja":"水上排水量","de":"Verdrängung aufgetaucht","fr":"Déplacement en surface"},"Typical bulb":{"es":"Cabeza típica","pt":"Cabeça típica","ja":"一般的な大きさ1玉","de":"Typische Knolle","fr":"Tête typique"},"Typical whole fruit":{"es":"Pieza entera típica","pt":"Fruta inteira típica","ja":"一般的な大きさ1個","de":"Typische ganze Frucht","fr":"Fruit entier typique"},"US large, in shell":{"es":"Grande (EE. UU.), con cáscara","pt":"Grande (EUA), com casca","ja":"米国Lサイズ・殻付き","de":"US-Größe L, mit Schale","fr":"Gros (É.-U.), avec coquille"},"US max gross weight":{"es":"Peso bruto máx. legal en EE. UU.","pt":"Peso bruto máx. legal nos EUA","ja":"米国の法定最大総重量","de":"Max. zul. Gesamtgewicht (USA)","fr":"Poids total max. légal (É.-U.)"},"US serving":{"es":"Ración en EE. UU.","pt":"Porção nos EUA","ja":"米国の1個","de":"US-Portion","fr":"Portion américaine"}};
+const CARAT={es:"quilates",pt:"quilates",ja:"カラット",de:"Karat",fr:"carats"};
 function qualOf(m){
   const c=String(m[1]||"");
-  if(c.startsWith("~")){ const p=c.split("~"); return L==="ko"?(p[2]||p[1]):p[1]; }
+  if(c.startsWith("~")){
+    const p=c.split("~"), en=p[1], ko=p[2]||en;
+    if(L==="ko") return ko; if(L==="en") return en;
+    const x=QX_I18N[en]; if(x&&x[L]) return x[L];
+    const ct=en.match(/^([\d,.]+) carats$/); if(ct) return N(parseFloat(ct[1].replace(/,/g,"")))+(L==="ja"?"":" ")+CARAT[L];
+    return en;
+  }
+  if(L!=="ko"&&L!=="en"&&QUAL_I18N[c]&&QUAL_I18N[c][L]) return QUAL_I18N[c][L];
   const q=QUAL[c]; return q ? q[L==="ko"?1:0] : "";
 }
 function mtName(m){ return (L==="ko" && m[3]) ? m[3] : m[0]; }
@@ -658,7 +853,7 @@ function wParts(kg){
   const d = v<1 ? 3 : v<10 ? 2 : v<100 ? 1 : 0;
   return {v,u,d};
 }
-const fmtNum = (v,d) => Number(v.toFixed(d)).toLocaleString(undefined,{maximumFractionDigits:d});
+const fmtNum = (v,d) => Number(v.toFixed(d)).toLocaleString(LOC(),{maximumFractionDigits:d});
 function fmtW(kg){ const p=wParts(kg); return fmtNum(p.v,p.d)+" "+p.u; }
 function renderUnitSeg(){
   const box=$("useg"); box.innerHTML="";
@@ -842,9 +1037,10 @@ function applyI18n(){
   $("b-share-battle").textContent=t("share"); $("b-share-daily").textContent=t("share");
   $("guess").placeholder=t("guess_ph"); renderUnitSeg();
   $("b-recover").textContent=t("recover_btn"); $("recode").placeholder=t("recover_ph"); renderStats();
-  $("mtcount").textContent="⚖️ "+MT.length.toLocaleString()+" "+t("mts");
+  $("mtcount").textContent="⚖️ "+MT.length.toLocaleString(LOC())+" "+t("mts");
   $("catcount").textContent="🗂 "+CATKEYS.length+" "+t("cats_n");
   $("langsel").value=L;
+  document.documentElement.lang=L; document.title="Weighle — "+t("tag");
   $("u-metric").classList.toggle("on",usys==="metric"); $("u-imperial").classList.toggle("on",usys==="imperial");
   $("snd-on").classList.toggle("on",sound); $("snd-off").classList.toggle("on",!sound);
   if($("s-room").classList.contains("on")) renderRoomSetup();
@@ -924,7 +1120,7 @@ function cmpBox(who,val,sub,isPts){
   return `<div class="cmpbox"><div class="cmpwho">${esc(who)}</div><div class="cmpval">${val}</div><div class="cmpdmg${isPts?" pts":""}">${sub}</div></div>`;
 }
 const pctOf=(g,act)=>Math.round(Math.abs(g-act)/act*100);
-const errText=(g,act)=> t("err")+" "+fmtW(Math.abs(g-act))+" ("+pctOf(g,act).toLocaleString()+"%)";
+const errText=(g,act)=> t("err")+" "+fmtW(Math.abs(g-act))+" ("+pctOf(g,act).toLocaleString(LOC())+"%)";
 
 /* ================= 싱글 (데일리 / 연습) ================= */
 const DAILY_KEY="wl_d1_";
@@ -979,7 +1175,7 @@ function soloRound(){
   $("roundtxt").textContent = t("round")+" "+G.round+(G.mode==="daily"?" / 5":"");
   const sum=G.pts.reduce((a,b)=>a+b,0);
   $("scoretxt").textContent = G.mode==="practice" && G.pts.length
-    ? t("avg_pts")+" "+Math.round(sum/G.pts.length).toLocaleString() : (G.mode==="daily"? sum.toLocaleString()+t("pts") : "");
+    ? t("avg_pts")+" "+Math.round(sum/G.pts.length).toLocaleString(LOC()) : (G.mode==="daily"? sum.toLocaleString(LOC())+t("pts") : "");
   startTimerWhenShown(showItem(m),()=>soloSubmit(null));
 }
 function soloSubmit(guessKg){
@@ -992,7 +1188,7 @@ function soloSubmit(guessKg){
   $("guessarea").style.display="none"; $("revealarea").style.display="block"; showSrcLink();
   countUp($("altnum"),actual);
   const err = guessKg==null?t("timeout"):errText(guessKg,actual);
-  $("cmparea").innerHTML=cmpBox(t("me"),guessKg==null?"—":fmtW(guessKg),err+" · +"+pts.toLocaleString()+t("pts"),true);
+  $("cmparea").innerHTML=cmpBox(t("me"),guessKg==null?"—":fmtW(guessKg),err+" · +"+pts.toLocaleString(LOC())+t("pts"),true);
   $("nextmsg").textContent=t("next_in");
   sndReveal(pts>=3500);
   revealTimer=setTimeout(()=>{
@@ -1006,9 +1202,9 @@ const emOf=p=>p>=4500?"🎯":p>=3500?"⚖️":p>=2000?"📦":"🪶";
 function showDailyResult(res,dn){
   cleanupGame();
   $("dailytitle").textContent=t("daily_title")+" #"+dn;
-  $("dailyscore").textContent=res.s.toLocaleString();
+  $("dailyscore").textContent=res.s.toLocaleString(LOC());
   $("dailyemoji").textContent=res.p.map(emOf).join("");
-  $("dailydetail").innerHTML=res.p.map((p,i)=>`${t("round")} ${i+1} — ${emOf(p)} ${p.toLocaleString()}${t("pts")}`).join("<br>");
+  $("dailydetail").innerHTML=res.p.map((p,i)=>`${t("round")} ${i+1} — ${emOf(p)} ${p.toLocaleString(LOC())}${t("pts")}`).join("<br>");
   $("b-share-daily").onclick=()=>share(STR[L].share_daily(dn,res.s,res.p.map(emOf).join(""))+location.href);
   screen("daily-result");
 }
@@ -1022,14 +1218,14 @@ function battleUIBase(myNick,foeNick){
 }
 function setHP(me,foe){
   $("myhp").style.width=Math.max(0,me/START_HP*100)+"%"; $("foehp").style.width=Math.max(0,foe/START_HP*100)+"%";
-  $("myhpn").textContent=Math.max(0,me).toLocaleString(); $("foehpn").textContent=Math.max(0,foe).toLocaleString();
+  $("myhpn").textContent=Math.max(0,me).toLocaleString(LOC()); $("foehpn").textContent=Math.max(0,foe).toLocaleString(LOC());
 }
 function battleRoundUI(r){
   $("roundtxt").textContent=t("round")+" "+r+" / 15";
   $("scoretxt").textContent="";
   $("multbadge").style.display="none";
 }
-const fmtM=m=>"×"+(+m).toString();
+const fmtM=m=>"×"+N(+m,{maximumFractionDigits:2});
 function setMult(me,foe){
   [["mymult",me],["foemult",foe]].forEach(([id,m])=>{
     const el=$(id); m=m||1;
@@ -1043,9 +1239,9 @@ function multNote(me,foe){ return t("next_mult")+" "+t("me")+" "+fmtM(me||1)+" �
 function cmpBattle(who,guessKg,actual,taken,dealt,usedMult){
   const guessStr = guessKg==null||guessKg<0 ? "—" : fmtW(guessKg);
   const errStr = guessKg==null||guessKg<0 ? t("timeout") : errText(guessKg,actual);
-  const ptsStr = roundScore(guessKg,actual).toLocaleString()+t("pts");
-  const line = dealt>0 ? `<div class="cmpdmg pts">⚔️ ${dealt.toLocaleString()} ${t("attack")} (${fmtM(usedMult||1)})</div>`
-             : taken>0 ? `<div class="cmpdmg">-${taken.toLocaleString()} HP</div>`
+  const ptsStr = roundScore(guessKg,actual).toLocaleString(LOC())+t("pts");
+  const line = dealt>0 ? `<div class="cmpdmg pts">⚔️ ${dealt.toLocaleString(LOC())} ${t("attack")} (${fmtM(usedMult||1)})</div>`
+             : taken>0 ? `<div class="cmpdmg">-${taken.toLocaleString(LOC())} HP</div>`
              : `<div class="cmpdmg" style="color:var(--dim)">${t("tie")}</div>`;
   return `<div class="cmpbox"><div class="cmpwho">${esc(who)}</div><div class="cmpval">${guessStr}</div><div class="cmppts" style="color:var(--ice)">${errStr}</div><div class="cmpscore">${ptsStr}</div>${line}</div>`;
 }
@@ -1059,7 +1255,8 @@ function modeLine(cats){
 /* --- 봇 대결 (오프라인) --- */
 function startBotGame(){
   const myNick=localStorage.getItem("wl_nick")||nickname();
-  const foe=BOTNAMES[Math.floor(Math.random()*BOTNAMES.length)];
+  const pool=L==="ko"?BOTNAMES:BOTNAMES.filter(n=>!/[가-힣]/.test(n));
+  const foe=pool[Math.floor(Math.random()*pool.length)];
   G={mode:"bot",fb:false,round:1,myHP:START_HP,foeHP:START_HP,myMult:1,foeMult:1,foeNick:foe,
      mts:pickBalancedSeeded(Math.floor(Math.random()*1e9),15)};
   preloadPhotos(G.mts.map(i=>MT[i]));
@@ -1119,8 +1316,8 @@ function endBattle(myHP,foeHP,foeNick,walkover,mode){
   $("restitle").className="bigres "+(draw?"draw":win?"win":"lose");
   $("ressub").textContent=walkover?t("opp_left"):draw?t("draw_sub"):win?t("win_sub"):t("lose_sub");
   $("r-myname").textContent=localStorage.getItem("wl_nick");$("r-foename").textContent=foeNick;
-  $("r-myhp").textContent="HP "+Math.max(0,myHP).toLocaleString();
-  $("r-foehp").textContent="HP "+Math.max(0,foeHP).toLocaleString();
+  $("r-myhp").textContent="HP "+Math.max(0,myHP).toLocaleString(LOC());
+  $("r-foehp").textContent="HP "+Math.max(0,foeHP).toLocaleString(LOC());
   const w=draw?t("draw"):win?t("win"):t("lose");
   $("b-share-battle").onclick=()=>share(STR[L].share_battle(w,localStorage.getItem("wl_nick"),foeNick)+location.href);
   // 재대결 버튼
